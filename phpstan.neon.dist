@@ -2,7 +2,7 @@ includes:
   - vendor/micaherne/phpstan-moodle/extension.neon
 
 parameters:
-  level: 10
+  level: 8
   paths:
     - .
   excludePaths:

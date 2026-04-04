@@ -18,9 +18,11 @@ namespace local_devtools\local\databases;
 
 use DebugBar\DataCollector\PDO\TraceablePDO;
 use DebugBar\DataCollector\PDO\TracedStatement;
+use mysqli_native_moodle_database;
 use PDO;
 use ReflectionClass;
 use function in_array;
+use function is_array;
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -28,9 +30,7 @@ use function in_array;
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
-    /** @var \mysqli_native_moodle_database */
-    private \mysqli_native_moodle_database $realdb;
+class mysqli_native_devtools_database extends mysqli_native_moodle_database {
     /** @var TraceablePDO */
     private TraceablePDO $pdo;
     /** @var (TracedStatement|null)[] */
@@ -38,49 +38,33 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
 
     /**
      * Constructor.
-     * @param \mysqli_native_moodle_database $db
+     * @param mysqli_native_moodle_database $db
      */
-    public function __construct(\mysqli_native_moodle_database $db) {
-        $this->realdb = $db;
-        $this->clone_properties();
-
+    public function __construct(mysqli_native_moodle_database $db) {
         $this->pdo = new TraceablePDO(
             new PDO("mysql:host={$db->dbhost};dbname={$db->dbname}", $db->dbuser, $db->dbpass)
         );
 
-        $realdbreflection = new ReflectionClass($this->realdb);
-
-        // Set mysqli variable to null to prevent destructor from closing the connection when this wrapper instance is destroyed.
-        if ($realdbreflection->hasProperty('mysqli')) {
-            $realdbreflection->getProperty('mysqli')->setValue($this->realdb, null);
-        }
+        $this->clone_connection($db);
     }
 
     /**
-     * Helper method to clone all properties from the real database instance to this wrapper instance.
+     * Clone the database connection details from the original database instance.
+     * @param mysqli_native_moodle_database $db
+     * @return void
      */
-    private function clone_properties(): void {
-        $realdbreflection = new ReflectionClass($this->realdb);
-        $thisdbreflection = new ReflectionClass($this);
+    protected function clone_connection(mysqli_native_moodle_database $db) {
+        $reflection = new ReflectionClass($db);
 
-        foreach ($realdbreflection->getProperties() as $property) {
-            // Skip static properties.
-            if ($property->isStatic()) {
-                continue;
-            }
+        $dbhost = (string) $reflection->getProperty('dbhost')->getValue($db);
+        $dbuser = (string) $reflection->getProperty('dbuser')->getValue($db);
+        $dbpass = (string) $reflection->getProperty('dbpass')->getValue($db);
+        $dbname = (string) $reflection->getProperty('dbname')->getValue($db);
+        $prefix = (string) $reflection->getProperty('prefix')->getValue($db);
+        $dboptions = $reflection->getProperty('dboptions')->getValue($db);
+        $dboptions = is_array($dboptions) ? $dboptions : null;
 
-            $value = $property->getValue($this->realdb);
-
-            if (!$thisdbreflection->hasProperty($property->getName())) {
-                // If the wrapper doesn't have the property, we can choose to ignore it or log it.
-                // For now, we'll just ignore it.
-                continue;
-            }
-
-            // Set the same property on this wrapper instance.
-            $thisproperty = $thisdbreflection->getProperty($property->getName());
-            $thisproperty->setValue($this, $value);
-        }
+        $this->connect($dbhost, $dbuser, $dbpass, $dbname, $prefix, $dboptions);
     }
 
     /**
