@@ -22,7 +22,9 @@
  */
 
 use core\context\system;
+use core\output\html_writer;
 use core\url;
+use Symfony\Component\VarDumper\VarDumper;
 
 require_once(__DIR__ . '/../../../config.php');
 
@@ -34,4 +36,20 @@ $PAGE->set_context($context);
 $PAGE->set_url($url);
 
 echo $OUTPUT->header();
+
+echo html_writer::tag(
+    'div',
+    join(array_map(fn($line) => html_writer::tag('code', $line . '<br>'), [
+        '$transaction = $DB->start_delegated_transaction();',
+        '$data = $DB->get_records("user", ["id" => $USER->id]);',
+        '$transaction->allow_commit();',
+    ]))
+);
+
+$transaction = $DB->start_delegated_transaction();
+$data = $DB->get_records('user', ['id' => $USER->id]);
+$transaction->allow_commit();
+
+VarDumper::dump($data);
+
 echo $OUTPUT->footer();

@@ -17,7 +17,7 @@
 namespace local_devtools\local;
 
 use core\hook\after_config;
-use core\hook\output\before_standard_footer_html_generation;
+use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
 use local_devtools\local\databases\mysqli_native_devtools_database;
 
@@ -58,12 +58,12 @@ class hook_callbacks {
     }
 
     /**
-     * Callback for before_standard_footer_html_generation hook.
-     * @param before_standard_footer_html_generation $hook
+     * Callback for before_footer_html_generation hook.
+     * @param before_footer_html_generation $hook
      * @return void
      */
-    public static function before_standard_footer_html_generation(
-        before_standard_footer_html_generation $hook,
+    public static function before_footer_html_generation(
+        before_footer_html_generation $hook,
     ): void {
         $renderer = debugbar::instance()->getJavascriptRenderer();
         $hook->add_html($renderer->render());

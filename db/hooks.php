@@ -22,7 +22,7 @@
  */
 
 use core\hook\after_config;
-use core\hook\output\before_standard_footer_html_generation;
+use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
 use local_devtools\local\hook_callbacks;
 
@@ -38,7 +38,7 @@ $callbacks = [
         'callback' => [hook_callbacks::class, 'before_standard_head_html_generation'],
     ],
     [
-        'hook' => before_standard_footer_html_generation::class,
-        'callback' => [hook_callbacks::class, 'before_standard_footer_html_generation'],
+        'hook' => before_footer_html_generation::class,
+        'callback' => [hook_callbacks::class, 'before_footer_html_generation'],
     ],
 ];
