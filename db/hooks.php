@@ -15,17 +15,25 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * local_devtools version.php.
+ * Hook callback definitions.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+use core\hook\output\before_standard_footer_html_generation;
+use core\hook\output\before_standard_head_html_generation;
+use local_devtools\local\hook_callbacks;
 
-$plugin->version = 2026040401;
-$plugin->release = 2026040401;
-$plugin->requires = 2024100700;
-$plugin->component = 'local_devtools';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->supported = [405, 502];
+defined('MOODLE_INTERNAL') || die();
+
+$callbacks = [
+    [
+        'hook' => before_standard_head_html_generation::class,
+        'callback' => [hook_callbacks::class, 'before_standard_head_html_generation'],
+    ],
+    [
+        'hook' => before_standard_footer_html_generation::class,
+        'callback' => [hook_callbacks::class, 'before_standard_footer_html_generation'],
+    ],
+];

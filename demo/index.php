@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * local_devtools version.php.
+ * Empty page to demonstrate the debugbar in action.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+use core\context\system;
+use core\url;
 
-$plugin->version = 2026040401;
-$plugin->release = 2026040401;
-$plugin->requires = 2024100700;
-$plugin->component = 'local_devtools';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->supported = [405, 502];
+require_once(__DIR__ . '/../../../config.php');
+
+require_login();
+
+$url = new url('/local/devtools/demo/index.php');
+$context = system::instance();
+$PAGE->set_context($context);
+$PAGE->set_url($url);
+
+echo $OUTPUT->header();
+echo $OUTPUT->footer();

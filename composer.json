@@ -1,6 +1,9 @@
 {
     "name": "imfelixyeung/moodle-local_devtools",
     "description": "A collection of tools to help with the development of Moodle.",
+    "require-dev": {
+        "php-debugbar/php-debugbar": "^3.7"
+    },
     "authors": [
         {
             "name": "Felix Yeung",
