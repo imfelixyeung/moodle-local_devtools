@@ -19,6 +19,7 @@ namespace local_devtools\local;
 use core\hook\after_config;
 use core\hook\output\before_standard_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
+use local_devtools\local\databases\mysqli_native_devtools_database;
 
 /**
  * Hook callbacks.
@@ -36,7 +37,7 @@ class hook_callbacks {
         after_config $hook,
     ): void {
         global $DB;
-        $DB = new devtools_database($DB);
+        $DB = new mysqli_native_devtools_database($DB);
     }
 
     /**
