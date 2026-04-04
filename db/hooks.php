@@ -21,6 +21,7 @@
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\hook\after_config;
 use core\hook\output\before_standard_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
 use local_devtools\local\hook_callbacks;
@@ -28,6 +29,10 @@ use local_devtools\local\hook_callbacks;
 defined('MOODLE_INTERNAL') || die();
 
 $callbacks = [
+    [
+        'hook' => after_config::class,
+        'callback' => [hook_callbacks::class, 'after_config'],
+    ],
     [
         'hook' => before_standard_head_html_generation::class,
         'callback' => [hook_callbacks::class, 'before_standard_head_html_generation'],

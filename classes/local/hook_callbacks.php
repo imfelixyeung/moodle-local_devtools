@@ -16,6 +16,7 @@
 
 namespace local_devtools\local;
 
+use core\hook\after_config;
 use core\hook\output\before_standard_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
 
@@ -26,6 +27,18 @@ use core\hook\output\before_standard_head_html_generation;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks {
+    /**
+     * Callback for after_config hook.
+     * @param after_config $hook
+     * @return void
+     */
+    public static function after_config(
+        after_config $hook,
+    ): void {
+        global $DB;
+        $DB = new devtools_database($DB);
+    }
+
     /**
      * Callback for before_standard_head_html_generation hook.
      * @param before_standard_head_html_generation $hook
