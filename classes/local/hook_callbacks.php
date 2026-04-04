@@ -42,7 +42,10 @@ class hook_callbacks {
         // Add the database PDO connection to the debugbar.
         global $DB;
         $DB = new mysqli_native_devtools_database($DB);
-        debugbar::instance()->get_database_collector()->addConnection($DB->get_pdo(), 'moodle');
+
+        $debugbar = debugbar::instance();
+        $debugbar->get_database_collector()->addConnection($DB->get_pdo(), 'moodle');
+        $debugbar->get_time_data_collector()->addMeasure('debugbar:start');
     }
 
     /**
@@ -65,7 +68,9 @@ class hook_callbacks {
     public static function before_footer_html_generation(
         before_footer_html_generation $hook,
     ): void {
-        $renderer = debugbar::instance()->getJavascriptRenderer();
+        $debugbar = debugbar::instance();
+        $debugbar->get_time_data_collector()->addMeasure('debugbar:end');
+        $renderer = $debugbar->getJavascriptRenderer();
         $hook->add_html($renderer->render());
     }
 }
