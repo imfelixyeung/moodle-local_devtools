@@ -40,12 +40,24 @@ class mysqli_native_devtools_database extends mysqli_native_moodle_database {
      * Constructor.
      * @param mysqli_native_moodle_database $db
      */
-    public function __construct(mysqli_native_moodle_database $db) {
+    protected function __construct(mysqli_native_moodle_database $db) {
         $this->pdo = new TraceablePDO(
             new PDO("mysql:host={$db->dbhost};dbname={$db->dbname}", $db->dbuser, $db->dbpass)
         );
 
         $this->clone_connection($db);
+    }
+
+    /**
+     * Wrap the provided database instance with the devtools database class, if not already wrapped.
+     * @param mysqli_native_moodle_database $db
+     * @return self
+     */
+    public static function wrap(mysqli_native_moodle_database $db): self {
+        if ($db instanceof self) {
+            return $db;
+        }
+        return new self($db);
     }
 
     /**

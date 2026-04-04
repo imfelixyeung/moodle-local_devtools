@@ -43,7 +43,7 @@ class hook_callbacks {
         // Add the database PDO connection to the debugbar.
         global $DB;
         if ($DB instanceof mysqli_native_moodle_database) {
-            $DB = new mysqli_native_devtools_database($DB);
+            $DB = mysqli_native_devtools_database::wrap($DB);
 
             $debugbar = debugbar::instance();
             $debugbar->get_database_collector()?->addConnection($DB->get_pdo(), 'moodle');
