@@ -1,8 +1,10 @@
 {
     "name": "imfelixyeung/moodle-local_devtools",
     "description": "A collection of tools to help with the development of Moodle.",
+    "require": {
+        "php-debugbar/php-debugbar": "^3.7"
+    },
     "require-dev": {
-        "php-debugbar/php-debugbar": "^3.7",
         "phpstan/phpstan": "^2.1",
         "micaherne/phpstan-moodle": "^1.0"
     },
