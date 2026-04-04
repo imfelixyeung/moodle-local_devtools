@@ -16,6 +16,12 @@
 
 /**
  * Empty page to demonstrate the debugbar in action.
+ *
+ * @var moodle_database $DB
+ * @var stdClass $USER
+ * @var moodle_page $PAGE
+ * @var core_renderer $OUTPUT
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

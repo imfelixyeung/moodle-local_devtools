@@ -20,6 +20,7 @@ use core\hook\after_config;
 use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
 use local_devtools\local\databases\mysqli_native_devtools_database;
+use mysqli_native_moodle_database;
 
 /**
  * Hook callbacks.
@@ -41,11 +42,13 @@ class hook_callbacks {
 
         // Add the database PDO connection to the debugbar.
         global $DB;
-        $DB = new mysqli_native_devtools_database($DB);
+        if ($DB instanceof mysqli_native_moodle_database) {
+            $DB = new mysqli_native_devtools_database($DB);
 
-        $debugbar = debugbar::instance();
-        $debugbar->get_database_collector()->addConnection($DB->get_pdo(), 'moodle');
-        $debugbar->get_time_data_collector()->addMeasure('debugbar:start');
+            $debugbar = debugbar::instance();
+            $debugbar->get_database_collector()?->addConnection($DB->get_pdo(), 'moodle');
+            $debugbar->get_time_data_collector()?->addMeasure('debugbar:start');
+        }
     }
 
     /**
@@ -69,7 +72,7 @@ class hook_callbacks {
         before_footer_html_generation $hook,
     ): void {
         $debugbar = debugbar::instance();
-        $debugbar->get_time_data_collector()->addMeasure('debugbar:end');
+        $debugbar->get_time_data_collector()?->addMeasure('debugbar:end');
         $renderer = $debugbar->getJavascriptRenderer();
         $hook->add_html($renderer->render());
     }

@@ -59,7 +59,7 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
     /**
      * Helper method to clone all properties from the real database instance to this wrapper instance.
      */
-    private function clone_properties() {
+    private function clone_properties(): void {
         $realdbreflection = new ReflectionClass($this->realdb);
         $thisdbreflection = new ReflectionClass($this);
 
@@ -90,10 +90,13 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
      */
     protected function should_log_query(int $type): bool {
         // Only log application queries, not internal ones.
+        /** @var int[] $committypes */
         static $committypes = [SQL_QUERY_SELECT, SQL_QUERY_INSERT, SQL_QUERY_UPDATE];
         return in_array($type, $committypes, true);
     }
 
+    // phpcs:ignore moodle.Commenting.InlineComment
+    // @phpstan-ignore missingType.iterableValue
     #[\Override]
     protected function query_start($sql, ?array $params, $type, $extrainfo = null) {
         if (!$this->should_log_query($type)) {
@@ -115,11 +118,17 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
         parent::query_end($result);
 
         $statement = array_pop($this->executedstatements);
-        if ($statement) {
-            /** @var \mysqli_result|null $mysqliresult */
-            $mysqliresult = $result instanceof \mysqli_result ? $result : null;
+        if (!$statement) {
+            return;
+        }
 
-            $statement->end(rowCount: $mysqliresult?->num_rows ?? 0);
+        /** @var \mysqli_result|null $mysqliresult */
+        $mysqliresult = $result instanceof \mysqli_result ? $result : null;
+
+        if ($mysqliresult) {
+            $statement->end(rowCount: (int) $mysqliresult->num_rows);
+        } else {
+            $statement->end();
         }
     }
 
@@ -155,7 +164,7 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
 
     /**
      * Get the TraceablePDO instance.
-     * @return PDO
+     * @return TraceablePDO
      */
     public function get_pdo(): TraceablePDO {
         return $this->pdo;

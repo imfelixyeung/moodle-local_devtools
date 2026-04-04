@@ -73,7 +73,7 @@ class debugbar extends BaseDebugBar {
 
     /**
      * Get the singleton instance of the debugbar.
-     * @return self|null
+     * @return self
      */
     public static function instance(): self {
         if (self::$instance) {
@@ -85,6 +85,7 @@ class debugbar extends BaseDebugBar {
 
     /**
      * Get the database collector instance, or null if it is not available or of the wrong type.
+     * @return PDOCollector|null
      */
     public function get_database_collector(): ?PDOCollector {
         $collector = $this->getCollector('pdo');
@@ -97,10 +98,24 @@ class debugbar extends BaseDebugBar {
 
     /**
      * Get the time data collector instance, or null if it is not available or of the wrong type.
+     * @return TimeDataCollector|null
      */
     public function get_time_data_collector(): ?TimeDataCollector {
         $collector = $this->getCollector('time');
         if (!($collector instanceof TimeDataCollector)) {
+            // This should never happen but for static analysis we need to check the type before returning.
+            return null;
+        }
+        return $collector;
+    }
+
+    /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return ExceptionsCollector|null
+     */
+    public function get_exceptions_collector(): ?ExceptionsCollector {
+        $collector = $this->getCollector('exceptions');
+        if (!($collector instanceof ExceptionsCollector)) {
             // This should never happen but for static analysis we need to check the type before returning.
             return null;
         }
@@ -143,8 +158,7 @@ class debugbar extends BaseDebugBar {
      * @return void
      */
     public function log_exception(Throwable $exception): void {
-        /** @var ExceptionsCollector|null $collector */
-        $collector = $this->getCollector('exceptions');
+        $collector = $this->get_exceptions_collector();
         if (!$collector) {
             return;
         }
