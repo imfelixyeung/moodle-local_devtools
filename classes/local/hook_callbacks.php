@@ -36,8 +36,13 @@ class hook_callbacks {
     public static function after_config(
         after_config $hook,
     ): void {
+        // Autoload the plugin's vendor dependencies.
+        require_once(__DIR__ . '/../../vendor/autoload.php');
+
+        // Add the database PDO connection to the debugbar.
         global $DB;
         $DB = new mysqli_native_devtools_database($DB);
+        debugbar::instance()->get_database_collector()->addConnection($DB->get_pdo(), 'moodle');
     }
 
     /**
@@ -48,7 +53,7 @@ class hook_callbacks {
     public static function before_standard_head_html_generation(
         before_standard_head_html_generation $hook,
     ): void {
-        $renderer = debugbar::instance()->get_debugbar_renderer();
+        $renderer = debugbar::instance()->getJavascriptRenderer();
         $hook->add_html($renderer->renderHead());
     }
 
@@ -60,7 +65,7 @@ class hook_callbacks {
     public static function before_standard_footer_html_generation(
         before_standard_footer_html_generation $hook,
     ): void {
-        $renderer = debugbar::instance()->get_debugbar_renderer();
+        $renderer = debugbar::instance()->getJavascriptRenderer();
         $hook->add_html($renderer->render());
     }
 }

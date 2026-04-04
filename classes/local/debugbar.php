@@ -17,8 +17,14 @@
 namespace local_devtools\local;
 
 use core\url;
-use DebugBar\JavascriptRenderer;
-use DebugBar\StandardDebugBar;
+use DebugBar\DataCollector\ExceptionsCollector;
+use DebugBar\DataCollector\MemoryCollector;
+use DebugBar\DataCollector\MessagesCollector;
+use DebugBar\DataCollector\PDO\PDOCollector;
+use DebugBar\DataCollector\PhpInfoCollector;
+use DebugBar\DataCollector\RequestDataCollector;
+use DebugBar\DataCollector\TimeDataCollector;
+use DebugBar\DebugBar as BaseDebugBar;
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -26,24 +32,30 @@ use DebugBar\StandardDebugBar;
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class debugbar {
-    /** @var StandardDebugBar */
-    private StandardDebugBar $debugbar;
-    /** @var JavascriptRenderer */
-    private JavascriptRenderer $debugbarrenderer;
-    /** @var self|null */
+class debugbar extends BaseDebugBar {
+    /** @var self */
     private static ?self $instance = null;
 
     /**
      * Private constructor to prevent direct instantiation.
      */
     private function __construct() {
-        require_once(__DIR__ . '/../../vendor/autoload.php');
-
-        $this->debugbar = new StandardDebugBar();
-        $this->debugbarrenderer = $this->debugbar->getJavascriptRenderer();
         $baseurl = new url('/local/devtools/vendor/php-debugbar/php-debugbar/resources');
-        $this->debugbarrenderer->setBaseUrl($baseurl->out(false));
+        $this->getJavascriptRenderer()->setBaseUrl($baseurl->out(false));
+
+        $collectors = [
+            PhpInfoCollector::class,
+            MessagesCollector::class,
+            RequestDataCollector::class,
+            TimeDataCollector::class,
+            MemoryCollector::class,
+            ExceptionsCollector::class,
+            PDOCollector::class,
+        ];
+
+        foreach ($collectors as $collector) {
+            $this->addCollector(new $collector());
+        }
     }
 
     /**
@@ -59,18 +71,14 @@ class debugbar {
     }
 
     /**
-     * Get the debugbar instance.
-     * @return StandardDebugBar
+     * Get the database collector instance, or null if it is not available or of the wrong type.
      */
-    public function get_debugbar(): StandardDebugBar {
-        return $this->debugbar;
-    }
-
-    /**
-     * Get the debugbar renderer.
-     * @return JavascriptRenderer
-     */
-    public function get_debugbar_renderer(): JavascriptRenderer {
-        return $this->debugbarrenderer;
+    public function get_database_collector(): ?PDOCollector {
+        $collector = $this->getCollector('pdo');
+        if (!($collector instanceof PDOCollector)) {
+            // This should never happen but for static analysis we need to check the type before returning.
+            return null;
+        }
+        return $collector;
     }
 }

@@ -16,6 +16,9 @@
 
 namespace local_devtools\local\databases;
 
+use DebugBar\DataCollector\PDO\TraceablePDO;
+use DebugBar\DataCollector\PDO\TracedStatement;
+use PDO;
 use ReflectionClass;
 
 /**
@@ -25,8 +28,12 @@ use ReflectionClass;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
-    /** @var \mysqli_native_moodle_database|null */
+    /** @var \mysqli_native_moodle_database */
     private \mysqli_native_moodle_database $realdb;
+    /** @var TraceablePDO */
+    private TraceablePDO $pdo;
+    /** @var TracedStatement[] */
+    private array $executedstatements = [];
 
     /**
      * Constructor.
@@ -35,6 +42,10 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
     public function __construct(\mysqli_native_moodle_database $db) {
         $this->realdb = $db;
         $this->clone_properties();
+
+        $this->pdo = new TraceablePDO(
+            new PDO("mysql:host={$db->dbhost};dbname={$db->dbname}", $db->dbuser, $db->dbpass)
+        );
 
         $realdbreflection = new ReflectionClass($this->realdb);
 
@@ -69,5 +80,36 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
             $thisproperty = $thisdbreflection->getProperty($property->getName());
             $thisproperty->setValue($this, $value);
         }
+    }
+
+    #[\Override]
+    protected function query_start($sql, ?array $params, $type, $extrainfo = null) {
+        $statement = new TracedStatement($sql, $params ?? []);
+        $statement->start();
+        $this->executedstatements[] = $statement;
+        $this->pdo->addExecutedStatement($statement);
+
+        parent::query_start($sql, $params, $type, $extrainfo);
+    }
+
+    #[\Override]
+    protected function query_end($result) {
+        parent::query_end($result);
+
+        $statement = array_pop($this->executedstatements);
+        if ($statement) {
+            /** @var \mysqli_result|null $mysqliresult */
+            $mysqliresult = $result instanceof \mysqli_result ? $result : null;
+
+            $statement->end(rowCount: $mysqliresult?->num_rows ?? 0);
+        }
+    }
+
+    /**
+     * Get the TraceablePDO instance.
+     * @return PDO
+     */
+    public function get_pdo(): TraceablePDO {
+        return $this->pdo;
     }
 }
