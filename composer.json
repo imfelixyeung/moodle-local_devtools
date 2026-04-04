@@ -2,7 +2,9 @@
     "name": "imfelixyeung/moodle-local_devtools",
     "description": "A collection of tools to help with the development of Moodle.",
     "require": {
-        "php-debugbar/php-debugbar": "^3.7"
+        "php": "^8.3",
+        "php-debugbar/php-debugbar": "^3.7",
+        "symfony/var-dumper": "^7.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
