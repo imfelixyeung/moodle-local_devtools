@@ -59,6 +59,13 @@ class debugbar extends BaseDebugBar {
             $this->addCollector(new $collector());
         }
 
+        // If the PDO collector is available, set the TimeDataCollector on it so it can log query execution times.
+        $pdo = $this->get_database_collector();
+        $td = $this->get_time_data_collector();
+        if ($pdo && $td) {
+            $pdo->setTimeDataCollector($td);
+        }
+
         // Set our own handlers to log errors and exceptions to the debugbar.
         set_error_handler([$this, 'error_handler']);
         set_exception_handler([$this, 'exception_handler']);
@@ -82,6 +89,18 @@ class debugbar extends BaseDebugBar {
     public function get_database_collector(): ?PDOCollector {
         $collector = $this->getCollector('pdo');
         if (!($collector instanceof PDOCollector)) {
+            // This should never happen but for static analysis we need to check the type before returning.
+            return null;
+        }
+        return $collector;
+    }
+
+    /**
+     * Get the time data collector instance, or null if it is not available or of the wrong type.
+     */
+    public function get_time_data_collector(): ?TimeDataCollector {
+        $collector = $this->getCollector('time');
+        if (!($collector instanceof TimeDataCollector)) {
             // This should never happen but for static analysis we need to check the type before returning.
             return null;
         }
