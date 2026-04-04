@@ -52,4 +52,20 @@ $transaction->allow_commit();
 
 VarDumper::dump($data);
 
+
+echo html_writer::tag(
+    'div',
+    join(array_map(fn($line) => html_writer::tag('code', $line . '<br>'), [
+        '$transaction = $DB->start_delegated_transaction();',
+        '$data = $DB->get_records("user", ["id" => $USER->id]);',
+        '$transaction->rollback(new \Exception("Rolling back transaction for demonstration purposes."));',
+    ]))
+);
+
+$transaction = $DB->start_delegated_transaction();
+$data = $DB->get_records('user', ['id' => $USER->id]);
+$transaction->rollback(new \Exception('Rolling back transaction for demonstration purposes.'));
+
+VarDumper::dump($data);
+
 echo $OUTPUT->footer();

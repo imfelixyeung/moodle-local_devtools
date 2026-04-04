@@ -20,6 +20,7 @@ use DebugBar\DataCollector\PDO\TraceablePDO;
 use DebugBar\DataCollector\PDO\TracedStatement;
 use PDO;
 use ReflectionClass;
+use function in_array;
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -32,7 +33,7 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
     private \mysqli_native_moodle_database $realdb;
     /** @var TraceablePDO */
     private TraceablePDO $pdo;
-    /** @var TracedStatement[] */
+    /** @var (TracedStatement|null)[] */
     private array $executedstatements = [];
 
     /**
@@ -82,8 +83,25 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
         }
     }
 
+    /**
+     * Determine whether a query of the given type should be logged.
+     * @param int $type
+     * @return bool
+     */
+    protected function should_log_query(int $type): bool {
+        // Only log application queries, not internal ones.
+        static $committypes = [SQL_QUERY_SELECT, SQL_QUERY_INSERT, SQL_QUERY_UPDATE];
+        return in_array($type, $committypes, true);
+    }
+
     #[\Override]
     protected function query_start($sql, ?array $params, $type, $extrainfo = null) {
+        if (!$this->should_log_query($type)) {
+            parent::query_start($sql, $params, $type, $extrainfo);
+            $this->executedstatements[] = null; // Placeholder to keep the stack in sync.
+            return;
+        }
+
         $statement = new TracedStatement($sql, $params ?? []);
         $statement->start();
         $this->executedstatements[] = $statement;
@@ -103,6 +121,36 @@ class mysqli_native_devtools_database extends \mysqli_native_moodle_database {
 
             $statement->end(rowCount: $mysqliresult?->num_rows ?? 0);
         }
+    }
+
+    #[\Override]
+    protected function begin_transaction() {
+        if (!$this->transactions_supported()) {
+            return;
+        }
+
+        $this->pdo->beginTransaction();
+        parent::begin_transaction();
+    }
+
+    #[\Override]
+    protected function commit_transaction() {
+        if (!$this->transactions_supported()) {
+            return;
+        }
+
+        $this->pdo->commit();
+        parent::commit_transaction();
+    }
+
+    #[\Override]
+    protected function rollback_transaction() {
+        if (!$this->transactions_supported()) {
+            return;
+        }
+
+        $this->pdo->rollBack();
+        parent::rollback_transaction();
     }
 
     /**
