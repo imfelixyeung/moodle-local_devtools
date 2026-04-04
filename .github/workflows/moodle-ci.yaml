@@ -113,3 +113,29 @@ jobs:
             - name: Mark cancelled jobs as failed.
               if: ${{ cancelled() }}
               run: exit 1
+
+    build:
+        needs: test
+        runs-on: ubuntu-22.04
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+        steps:
+            - name: Check out repository code
+              uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.3"
+
+            - name: Install dependencies
+              run: composer install --prefer-dist --no-dev
+
+            - name: Build plugin zip
+              run: bash scripts/build.sh
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: local_devtools
+                  path: dist/local_devtools.zip
