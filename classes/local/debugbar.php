@@ -25,6 +25,8 @@ use DebugBar\DataCollector\PhpInfoCollector;
 use DebugBar\DataCollector\RequestDataCollector;
 use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar as BaseDebugBar;
+use ErrorException;
+use Throwable;
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -56,6 +58,10 @@ class debugbar extends BaseDebugBar {
         foreach ($collectors as $collector) {
             $this->addCollector(new $collector());
         }
+
+        // Set our own handlers to log errors and exceptions to the debugbar.
+        set_error_handler([$this, 'error_handler']);
+        set_exception_handler([$this, 'exception_handler']);
     }
 
     /**
@@ -80,5 +86,49 @@ class debugbar extends BaseDebugBar {
             return null;
         }
         return $collector;
+    }
+
+    /**
+     * Custom error handler to convert PHP errors to exceptions and log them to the debugbar.
+     * @param int $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param int $errline
+     * @return bool
+     */
+    public function error_handler(int $errno, string $errstr, string $errfile, int $errline): bool {
+        // Convert the error to an exception and log it to the debugbar.
+        $exception = new ErrorException($errstr, 0, $errno, $errfile, $errline);
+        $this->log_exception($exception);
+
+        // Now call Moodle's default error handler to log to error log as normal.
+        return default_error_handler($errno, $errstr, $errfile, $errline);
+    }
+
+    /**
+     * Custom exception handler to log uncaught exceptions to the debugbar.
+     * @param Throwable $exception
+     * @return void
+     */
+    public function exception_handler(Throwable $exception): void {
+        var_dump("Logging uncaught exception to debugbar: " . $exception->getMessage());
+        $this->log_exception($exception);
+
+        // Now call Moodle's default exception handler to display the error page and log to error log as normal.
+        default_exception_handler($exception);
+    }
+
+    /**
+     * Logs exception to the debugbar's ExceptionsCollector.
+     * @param Throwable $exception The exception to log.
+     * @return void
+     */
+    public function log_exception(Throwable $exception): void {
+        /** @var ExceptionsCollector|null $collector */
+        $collector = $this->getCollector('exceptions');
+        if (!$collector) {
+            return;
+        }
+        $collector->addException($exception);
     }
 }
