@@ -1,0 +1,11 @@
+{
+    "name": "imfelixyeung/moodle-local_devtools",
+    "description": "A collection of tools to help with the development of Moodle.",
+    "authors": [
+        {
+            "name": "Felix Yeung",
+            "email": "me@felixyeung.com"
+        }
+    ],
+    "require": {}
+}
