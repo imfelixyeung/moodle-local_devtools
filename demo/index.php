@@ -30,6 +30,7 @@
 use core\context\system;
 use core\output\html_writer;
 use core\url;
+use local_devtools\local\debugbar;
 use Symfony\Component\VarDumper\VarDumper;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -52,11 +53,16 @@ echo html_writer::tag(
     ]))
 );
 
-$transaction = $DB->start_delegated_transaction();
-$data = $DB->get_records('user', ['id' => $USER->id]);
-$transaction->allow_commit();
+try {
+    $transaction = $DB->start_delegated_transaction();
+    $data = $DB->get_records('user', ['id' => $USER->id]);
+    $transaction->allow_commit();
 
-VarDumper::dump($data);
+    VarDumper::dump($data);
+} catch (\Throwable $th) {
+    debugbar::instance()->log_exception($th);
+    VarDumper::dump($th);
+}
 
 
 echo html_writer::tag(
@@ -68,10 +74,16 @@ echo html_writer::tag(
     ]))
 );
 
-$transaction = $DB->start_delegated_transaction();
-$data = $DB->get_records('user', ['id' => $USER->id]);
-$transaction->rollback(new \Exception('Rolling back transaction for demonstration purposes.'));
+try {
+    $transaction = $DB->start_delegated_transaction();
+    $data = $DB->get_records('user', ['id' => $USER->id]);
+    $transaction->rollback(new \Exception('Rolling back transaction for demonstration purposes.'));
 
-VarDumper::dump($data);
+    VarDumper::dump($data);
+} catch (\Throwable $th) {
+    debugbar::instance()->log_exception($th);
+    VarDumper::dump($th);
+}
+
 
 echo $OUTPUT->footer();
