@@ -31,7 +31,7 @@ jobs:
                         "MOODLE_501_STABLE",
                         "main",
                     ]
-                database: [mysql, mariadb]
+                database: [mysqli, mariadb]
 
         steps:
             - name: Check out repository code
