@@ -17,23 +17,23 @@
 namespace local_devtools\local\databases;
 
 use DebugBar\DataCollector\PDO\TraceablePDO;
-use mysqli_native_moodle_database;
+use mariadb_native_moodle_database;
 use PDO;
 
 /**
- * MySQL Moodle database wrapper.
+ * MariaDB Moodle database wrapper.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mysqli_native_devtools_database extends mysqli_native_moodle_database implements devtools_database_interface {
+class mariadb_native_devtools_database extends mariadb_native_moodle_database implements devtools_database_interface {
     use devtools_database_trait;
 
     /**
      * Constructor.
-     * @param mysqli_native_moodle_database $db
+     * @param mariadb_native_moodle_database $db
      */
-    protected function __construct(mysqli_native_moodle_database $db) {
+    protected function __construct(mariadb_native_moodle_database $db) {
         $this->pdo = new TraceablePDO(
             new PDO("mysql:host={$db->dbhost};dbname={$db->dbname}", $db->dbuser, $db->dbpass)
         );
@@ -43,10 +43,10 @@ class mysqli_native_devtools_database extends mysqli_native_moodle_database impl
 
     /**
      * Wrap the provided database instance with the devtools database class, if not already wrapped.
-     * @param mysqli_native_moodle_database $db
+     * @param mariadb_native_moodle_database $db
      * @return self
      */
-    public static function wrap(mysqli_native_moodle_database $db): self {
+    public static function wrap(mariadb_native_moodle_database $db): self {
         if ($db instanceof self) {
             return $db;
         }

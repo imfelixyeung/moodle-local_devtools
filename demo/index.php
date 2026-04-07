@@ -85,5 +85,10 @@ try {
     VarDumper::dump($th);
 }
 
+echo html_writer::tag(
+    'div',
+    html_writer::tag('code', 'Dumping the $DB global variable to show the wrapped PDO connection.')
+);
+VarDumper::dump($DB);
 
 echo $OUTPUT->footer();

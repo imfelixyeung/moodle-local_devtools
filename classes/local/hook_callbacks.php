@@ -19,8 +19,7 @@ namespace local_devtools\local;
 use core\hook\after_config;
 use core\hook\output\before_footer_html_generation;
 use core\hook\output\before_standard_head_html_generation;
-use local_devtools\local\databases\mysqli_native_devtools_database;
-use mysqli_native_moodle_database;
+use local_devtools\local\databases\helper;
 
 /**
  * Hook callbacks.
@@ -42,11 +41,11 @@ class hook_callbacks {
 
         // Add the database PDO connection to the debugbar.
         global $DB;
-        if ($DB instanceof mysqli_native_moodle_database) {
-            $DB = mysqli_native_devtools_database::wrap($DB);
-
+        $DB = helper::wrap_database($DB);
+        $pdo = helper::get_pdo($DB);
+        if ($pdo) {
             $debugbar = debugbar::instance();
-            $debugbar->get_database_collector()?->addConnection($DB->get_pdo(), 'moodle');
+            $debugbar->get_database_collector()?->addConnection($pdo, 'moodle');
             $debugbar->get_time_data_collector()?->addMeasure('debugbar:start');
         }
     }
