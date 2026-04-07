@@ -19,6 +19,7 @@ namespace local_devtools\local\databases;
 use DebugBar\DataCollector\PDO\TraceablePDO;
 use DebugBar\DataCollector\PDO\TracedStatement;
 use moodle_database;
+use mysqli_native_moodle_database;
 use mysqli_result;
 use ReflectionClass;
 use function in_array;
@@ -26,6 +27,13 @@ use function is_array;
 
 /**
  * Common wrapper functions.
+ *
+ * // phpcs:disable moodle.Commenting.ValidTags.Invalid
+ * Helper type aliases for static analysis.
+ * @phpstan-type BacktraceFrame array{file?: string, line?: int, class?: string, function?: string}
+ * @phpstan-type Backtrace BacktraceFrame[]
+ * // phpcs:enable moodle.Commenting.ValidTags.Invalid
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -85,7 +93,9 @@ trait devtools_database_trait {
             return;
         }
 
-        $statement = new TracedStatement($sql, $params ?? []);
+        $sqlwithtrace = $this->format_sql_trace($sql);
+
+        $statement = new TracedStatement($sqlwithtrace, $params ?? []);
         $statement->start();
         $this->executedstatements[] = $statement;
         $this->pdo->addExecutedStatement($statement);
@@ -93,6 +103,71 @@ trait devtools_database_trait {
         parent::query_start($sql, $params, $type, $extrainfo);
     }
     // phpcs:enable moodle.Commenting.MissingDocblock.Function
+
+    /**
+     * Append debugging information to the SQL query.
+     * Unlike @see moodle_database::add_sql_debugging(), we don't really care if the appended SQL is valid or not.
+     * @param string $sql
+     * @return string
+     */
+    protected function format_sql_trace(string $sql): string {
+        static $blacklistedclasses = [
+        moodle_database::class,
+        mysqli_native_moodle_database::class,
+        mariadb_native_devtools_database::class,
+        ];
+
+        /** @var Backtrace $backtrace */
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        $lastframe = array_pop($backtrace);
+
+        $backtrace = array_filter($backtrace, function ($frame) use ($blacklistedclasses) {
+            if (!isset($frame['class'])) {
+                return true;
+            }
+            return !in_array($frame['class'], $blacklistedclasses, true);
+        });
+
+        // Add last frame back.
+        if ($lastframe) {
+            $backtrace[] = $lastframe;
+        }
+
+        $formattedtracestring = $this->format_backtrace($backtrace);
+        return "$sql\n$formattedtracestring";
+    }
+
+    /**
+     * Format a backtrace array into a string for logging.
+     * @param Backtrace $backtrace
+     * @return string
+     */
+    protected function format_backtrace(array $backtrace): string {
+        $formattedframes = array_map([$this, 'format_backtrace_frame'], $backtrace);
+        $formattedframes = array_filter($formattedframes);
+        return implode("\n", $formattedframes);
+    }
+
+    /**
+     * Format a single backtrace frame for logging.
+     * @param BacktraceFrame $frame
+     * @return string|null
+     */
+    protected function format_backtrace_frame(array $frame): ?string {
+        $location = isset($frame['file'], $frame['line'])
+            ? "{$frame['file']}:{$frame['line']}"
+            : 'unknown location';
+
+        if (isset($frame['class'], $frame['function'])) {
+            return "-- at {$frame['class']}::{$frame['function']}() in $location";
+        }
+
+        if (isset($frame['function'])) {
+            return "-- at {$frame['function']}() in $location";
+        }
+
+        return null;
+    }
 
     /**
      * End query wrapper.
