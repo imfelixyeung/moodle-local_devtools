@@ -45,6 +45,8 @@ class debugbar extends BaseDebugBar {
         $baseurl = new url('/local/devtools/vendor/php-debugbar/php-debugbar/resources');
         $this->getJavascriptRenderer()->setBaseUrl($baseurl->out(false));
 
+        $this->setEditor('vscode');
+
         $collectors = [
             PhpInfoCollector::class,
             MessagesCollector::class,
