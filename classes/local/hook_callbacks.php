@@ -36,6 +36,10 @@ class hook_callbacks {
     public static function after_config(
         after_config $hook,
     ): void {
+        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+            return;
+        }
+
         // Autoload the plugin's vendor dependencies.
         require_once(__DIR__ . '/../../vendor/autoload.php');
 
@@ -58,6 +62,10 @@ class hook_callbacks {
     public static function before_standard_head_html_generation(
         before_standard_head_html_generation $hook,
     ): void {
+        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+            return;
+        }
+
         $renderer = debugbar::instance()->getJavascriptRenderer();
         $hook->add_html($renderer->renderHead());
     }
@@ -70,6 +78,10 @@ class hook_callbacks {
     public static function before_footer_html_generation(
         before_footer_html_generation $hook,
     ): void {
+        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+            return;
+        }
+
         $debugbar = debugbar::instance();
         $debugbar->get_time_data_collector()?->addMeasure('debugbar:end');
         $renderer = $debugbar->getJavascriptRenderer();

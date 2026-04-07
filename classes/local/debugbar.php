@@ -45,7 +45,10 @@ class debugbar extends BaseDebugBar {
         $baseurl = new url('/local/devtools/vendor/php-debugbar/php-debugbar/resources');
         $this->getJavascriptRenderer()->setBaseUrl($baseurl->out(false));
 
-        $this->setEditor('vscode');
+        $editor = \local_devtools\local\config\debugbar::get_editor();
+        if ($editor) {
+            $this->setEditor($editor);
+        }
 
         $collectors = [
             PhpInfoCollector::class,
@@ -54,11 +57,14 @@ class debugbar extends BaseDebugBar {
             TimeDataCollector::class,
             MemoryCollector::class,
             ExceptionsCollector::class,
-            PDOCollector::class,
         ];
 
         foreach ($collectors as $collector) {
             $this->addCollector(new $collector());
+        }
+
+        if (\local_devtools\local\config\debugbar::is_collect_queries_enabled()) {
+            $this->addCollector(new PDOCollector());
         }
 
         // If the PDO collector is available, set the TimeDataCollector on it so it can log query execution times.
@@ -90,6 +96,9 @@ class debugbar extends BaseDebugBar {
      * @return PDOCollector|null
      */
     public function get_database_collector(): ?PDOCollector {
+        if (!$this->hasCollector('pdo')) {
+            return null;
+        }
         $collector = $this->getCollector('pdo');
         if (!($collector instanceof PDOCollector)) {
             // This should never happen but for static analysis we need to check the type before returning.
@@ -103,6 +112,9 @@ class debugbar extends BaseDebugBar {
      * @return TimeDataCollector|null
      */
     public function get_time_data_collector(): ?TimeDataCollector {
+        if (!$this->hasCollector('time')) {
+            return null;
+        }
         $collector = $this->getCollector('time');
         if (!($collector instanceof TimeDataCollector)) {
             // This should never happen but for static analysis we need to check the type before returning.
@@ -116,6 +128,9 @@ class debugbar extends BaseDebugBar {
      * @return ExceptionsCollector|null
      */
     public function get_exceptions_collector(): ?ExceptionsCollector {
+        if (!$this->hasCollector('exceptions')) {
+            return null;
+        }
         $collector = $this->getCollector('exceptions');
         if (!($collector instanceof ExceptionsCollector)) {
             // This should never happen but for static analysis we need to check the type before returning.
