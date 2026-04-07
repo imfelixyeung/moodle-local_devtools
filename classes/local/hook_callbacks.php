@@ -36,7 +36,7 @@ class hook_callbacks {
     public static function after_config(
         after_config $hook,
     ): void {
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+        if (!self::callbacks_enabled()) {
             return;
         }
 
@@ -62,7 +62,7 @@ class hook_callbacks {
     public static function before_standard_head_html_generation(
         before_standard_head_html_generation $hook,
     ): void {
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+        if (!self::callbacks_enabled()) {
             return;
         }
 
@@ -78,7 +78,7 @@ class hook_callbacks {
     public static function before_footer_html_generation(
         before_footer_html_generation $hook,
     ): void {
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+        if (!self::callbacks_enabled()) {
             return;
         }
 
@@ -86,5 +86,18 @@ class hook_callbacks {
         $debugbar->get_time_data_collector()?->addMeasure('debugbar:end');
         $renderer = $debugbar->getJavascriptRenderer();
         $hook->add_html($renderer->render());
+    }
+
+    /**
+     * Determines if callbacks are enabled.
+     * Skips during unit testing as it seems to cause issues.
+     * @return bool
+     */
+    public static function callbacks_enabled() {
+        if (PHPUNIT_TEST) {
+            return false;
+        }
+
+        return \local_devtools\local\config\debugbar::is_enabled();
     }
 }
