@@ -51,8 +51,6 @@ class traced_statement extends TracedStatement {
         self::class,
         ];
 
-        \Symfony\Component\VarDumper\VarDumper::dump($blacklistedclasses);
-
         /** @var Backtrace $backtrace */
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         $lastframe = array_pop($backtrace);
@@ -70,8 +68,6 @@ class traced_statement extends TracedStatement {
         }
 
         $backtrace = array_slice($backtrace, 0, $limit);
-
-        \Symfony\Component\VarDumper\VarDumper::dump($backtrace);
 
         $this->backtrace = $backtrace;
         $this->sql = "$this->sql\n" . $this->format_backtrace($backtrace);

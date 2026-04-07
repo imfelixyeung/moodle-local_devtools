@@ -147,7 +147,6 @@ class debugbar extends BaseDebugBar {
      * @return void
      */
     public function exception_handler(Throwable $exception): void {
-        var_dump("Logging uncaught exception to debugbar: " . $exception->getMessage());
         $this->log_exception($exception);
 
         // Now call Moodle's default exception handler to display the error page and log to error log as normal.
