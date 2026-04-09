@@ -26,6 +26,8 @@ use DebugBar\DataCollector\RequestDataCollector;
 use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar as BaseDebugBar;
 use ErrorException;
+use local_devtools\local\debugbar\collectors\config_collector;
+use local_devtools\local\debugbar\collectors\moodle_collector;
 use Throwable;
 
 /**
@@ -57,6 +59,8 @@ class debugbar extends BaseDebugBar {
             TimeDataCollector::class,
             MemoryCollector::class,
             ExceptionsCollector::class,
+            config_collector::class,
+            moodle_collector::class,
         ];
 
         foreach ($collectors as $collector) {
@@ -73,6 +77,8 @@ class debugbar extends BaseDebugBar {
         if ($pdo && $td) {
             $pdo->setTimeDataCollector($td);
         }
+
+        $this->get_config_collector()?->populate();
 
         // Set our own handlers to log errors and exceptions to the debugbar.
         set_error_handler([$this, 'error_handler']);
@@ -133,6 +139,23 @@ class debugbar extends BaseDebugBar {
         }
         $collector = $this->getCollector('exceptions');
         if (!($collector instanceof ExceptionsCollector)) {
+            // This should never happen but for static analysis we need to check the type before returning.
+            return null;
+        }
+        return $collector;
+    }
+
+
+    /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return config_collector|null
+     */
+    public function get_config_collector(): ?config_collector {
+        if (!$this->hasCollector('config')) {
+            return null;
+        }
+        $collector = $this->getCollector('config');
+        if (!($collector instanceof config_collector)) {
             // This should never happen but for static analysis we need to check the type before returning.
             return null;
         }
