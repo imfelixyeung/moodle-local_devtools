@@ -17,6 +17,7 @@
 namespace local_devtools\local;
 
 use core\url;
+use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MemoryCollector;
 use DebugBar\DataCollector\MessagesCollector;
@@ -98,19 +99,32 @@ class debugbar extends BaseDebugBar {
     }
 
     /**
-     * Get the database collector instance, or null if it is not available or of the wrong type.
-     * @return PDOCollector|null
+     * Utility class to get a collector with correct type.
+     *
+     * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
+     * @template T of DataCollectorInterface
+     * @param string $name
+     * @param class-string<T> $class
+     * @return T|null
      */
-    public function get_database_collector(): ?PDOCollector {
-        if (!$this->hasCollector('pdo')) {
+    protected function get_collector(string $name, string $class): ?DataCollectorInterface {
+        if (!$this->hasCollector($name)) {
             return null;
         }
-        $collector = $this->getCollector('pdo');
-        if (!($collector instanceof PDOCollector)) {
+        $collector = $this->getCollector($name);
+        if (!($collector instanceof $class)) {
             // This should never happen but for static analysis we need to check the type before returning.
             return null;
         }
         return $collector;
+    }
+
+    /**
+     * Get the database collector instance, or null if it is not available or of the wrong type.
+     * @return PDOCollector|null
+     */
+    public function get_database_collector(): ?PDOCollector {
+        return $this->get_collector('pdo', PDOCollector::class);
     }
 
     /**
@@ -118,15 +132,7 @@ class debugbar extends BaseDebugBar {
      * @return TimeDataCollector|null
      */
     public function get_time_data_collector(): ?TimeDataCollector {
-        if (!$this->hasCollector('time')) {
-            return null;
-        }
-        $collector = $this->getCollector('time');
-        if (!($collector instanceof TimeDataCollector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('time', TimeDataCollector::class);
     }
 
     /**
@@ -134,15 +140,7 @@ class debugbar extends BaseDebugBar {
      * @return ExceptionsCollector|null
      */
     public function get_exceptions_collector(): ?ExceptionsCollector {
-        if (!$this->hasCollector('exceptions')) {
-            return null;
-        }
-        $collector = $this->getCollector('exceptions');
-        if (!($collector instanceof ExceptionsCollector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('exceptions', ExceptionsCollector::class);
     }
 
 
