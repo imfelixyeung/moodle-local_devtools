@@ -29,6 +29,7 @@ use DebugBar\DebugBar as BaseDebugBar;
 use ErrorException;
 use local_devtools\local\debugbar\collectors\config_collector;
 use local_devtools\local\debugbar\collectors\moodle_collector;
+use local_devtools\local\debugbar\log_level;
 use Throwable;
 
 /**
@@ -149,15 +150,15 @@ class debugbar extends BaseDebugBar {
      * @return config_collector|null
      */
     public function get_config_collector(): ?config_collector {
-        if (!$this->hasCollector('config')) {
-            return null;
-        }
-        $collector = $this->getCollector('config');
-        if (!($collector instanceof config_collector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('config', config_collector::class);
+    }
+
+    /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return MessagesCollector|null
+     */
+    public function get_messages_collector(): ?MessagesCollector {
+        return $this->get_collector('messages', MessagesCollector::class);
     }
 
     /**
@@ -200,5 +201,16 @@ class debugbar extends BaseDebugBar {
             return;
         }
         $collector->addException($exception);
+    }
+
+    /**
+     * Logs a message
+     * @param mixed $message
+     * @param log_level $level
+     * @param mixed[] $context
+     * @return void
+     */
+    public function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
+        $this->get_messages_collector()?->log($level->value, $message, $context);
     }
 }
