@@ -54,7 +54,7 @@ jobs:
                   coverage: none
 
             - name: Install dependencies
-              run: composer install --prefer-dist --no-dev --classmap-authoritative
+              run: cd plugin && composer install --prefer-dist --no-dev --classmap-authoritative
 
             - name: Initialise moodle-plugin-ci
               run: |
