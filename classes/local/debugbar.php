@@ -17,6 +17,7 @@
 namespace local_devtools\local;
 
 use core\url;
+use DebugBar\DataCollector\DataCollectorInterface;
 use DebugBar\DataCollector\ExceptionsCollector;
 use DebugBar\DataCollector\MemoryCollector;
 use DebugBar\DataCollector\MessagesCollector;
@@ -28,6 +29,7 @@ use DebugBar\DebugBar as BaseDebugBar;
 use ErrorException;
 use local_devtools\local\debugbar\collectors\config_collector;
 use local_devtools\local\debugbar\collectors\moodle_collector;
+use local_devtools\local\debugbar\log_level;
 use Throwable;
 
 /**
@@ -98,19 +100,32 @@ class debugbar extends BaseDebugBar {
     }
 
     /**
-     * Get the database collector instance, or null if it is not available or of the wrong type.
-     * @return PDOCollector|null
+     * Utility class to get a collector with correct type.
+     *
+     * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
+     * @template T of DataCollectorInterface
+     * @param string $name
+     * @param class-string<T> $class
+     * @return T|null
      */
-    public function get_database_collector(): ?PDOCollector {
-        if (!$this->hasCollector('pdo')) {
+    protected function get_collector(string $name, string $class): ?DataCollectorInterface {
+        if (!$this->hasCollector($name)) {
             return null;
         }
-        $collector = $this->getCollector('pdo');
-        if (!($collector instanceof PDOCollector)) {
+        $collector = $this->getCollector($name);
+        if (!($collector instanceof $class)) {
             // This should never happen but for static analysis we need to check the type before returning.
             return null;
         }
         return $collector;
+    }
+
+    /**
+     * Get the database collector instance, or null if it is not available or of the wrong type.
+     * @return PDOCollector|null
+     */
+    public function get_database_collector(): ?PDOCollector {
+        return $this->get_collector('pdo', PDOCollector::class);
     }
 
     /**
@@ -118,15 +133,7 @@ class debugbar extends BaseDebugBar {
      * @return TimeDataCollector|null
      */
     public function get_time_data_collector(): ?TimeDataCollector {
-        if (!$this->hasCollector('time')) {
-            return null;
-        }
-        $collector = $this->getCollector('time');
-        if (!($collector instanceof TimeDataCollector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('time', TimeDataCollector::class);
     }
 
     /**
@@ -134,15 +141,7 @@ class debugbar extends BaseDebugBar {
      * @return ExceptionsCollector|null
      */
     public function get_exceptions_collector(): ?ExceptionsCollector {
-        if (!$this->hasCollector('exceptions')) {
-            return null;
-        }
-        $collector = $this->getCollector('exceptions');
-        if (!($collector instanceof ExceptionsCollector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('exceptions', ExceptionsCollector::class);
     }
 
 
@@ -151,15 +150,15 @@ class debugbar extends BaseDebugBar {
      * @return config_collector|null
      */
     public function get_config_collector(): ?config_collector {
-        if (!$this->hasCollector('config')) {
-            return null;
-        }
-        $collector = $this->getCollector('config');
-        if (!($collector instanceof config_collector)) {
-            // This should never happen but for static analysis we need to check the type before returning.
-            return null;
-        }
-        return $collector;
+        return $this->get_collector('config', config_collector::class);
+    }
+
+    /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return MessagesCollector|null
+     */
+    public function get_messages_collector(): ?MessagesCollector {
+        return $this->get_collector('messages', MessagesCollector::class);
     }
 
     /**
@@ -202,5 +201,16 @@ class debugbar extends BaseDebugBar {
             return;
         }
         $collector->addException($exception);
+    }
+
+    /**
+     * Logs a message
+     * @param mixed $message
+     * @param log_level $level
+     * @param mixed[] $context
+     * @return void
+     */
+    public function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
+        $this->get_messages_collector()?->log($level->value, $message, $context);
     }
 }

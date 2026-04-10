@@ -31,6 +31,7 @@ use core\context\system;
 use core\output\html_writer;
 use core\url;
 use local_devtools\local\debugbar;
+use local_devtools\local\debugbar\log_level;
 use Symfony\Component\VarDumper\VarDumper;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -90,5 +91,14 @@ echo html_writer::tag(
     html_writer::tag('code', 'Dumping the $DB global variable to show the wrapped PDO connection.')
 );
 VarDumper::dump($DB);
+
+// Logging to the messages area.
+debugbar::instance()->log('Information');
+debugbar::instance()->log('Oops, an error', log_level::ERROR);
+debugbar::instance()->log('Warning!!', log_level::WARNING);
+debugbar::instance()->log((object) [
+    'Objects' => 'Are supported too',
+]);
+debugbar::instance()->log(new Exception('Exceptions'), log_level::CRITICAL);
 
 echo $OUTPUT->footer();
