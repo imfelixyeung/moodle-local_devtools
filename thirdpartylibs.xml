@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <libraries>
     <library>
-        <location>vendor/composer</location>
-        <name>Composer</name>
-        <version>1.0.0</version>
-        <license>MIT</license>
-    </library>
-    <library>
         <location>vendor/php-debugbar/php-debugbar</location>
         <name>PHP DebugBar</name>
         <version>3.7.0</version>
