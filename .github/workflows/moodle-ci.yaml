@@ -53,6 +53,9 @@ jobs:
                   # If you try to use code coverage with "none", it will fallback to phpdbg (which has known problems).
                   coverage: none
 
+            - name: Install dependencies
+              run: cd plugin && composer install --prefer-dist --no-dev --classmap-authoritative
+
             - name: Initialise moodle-plugin-ci
               run: |
                   composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
@@ -66,6 +69,7 @@ jobs:
               env:
                   DB: ${{ matrix.database }}
                   MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+                  IGNORE_PATHS: "vendor"
                   # Uncomment this to run Behat tests using the Moodle App.
                   # MOODLE_APP: 'true'
 
@@ -139,7 +143,7 @@ jobs:
                   php-version: "8.3"
 
             - name: Install dependencies
-              run: composer install --prefer-dist --no-dev
+              run: composer install --prefer-dist --no-dev --classmap-authoritative
 
             - name: Build plugin zip
               run: bash scripts/build.sh
