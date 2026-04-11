@@ -29,8 +29,12 @@ use DebugBar\DebugBar as BaseDebugBar;
 use ErrorException;
 use local_devtools\local\debugbar\collectors\config_collector;
 use local_devtools\local\debugbar\collectors\moodle_collector;
+use local_devtools\local\debugbar\collectors\string_manager_collector;
 use local_devtools\local\debugbar\log_level;
 use Throwable;
+
+defined('MOODLE_INTERNAL') || die;
+require_once(__DIR__ . '/../../vendor/autoload.php');
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -63,6 +67,7 @@ class debugbar extends BaseDebugBar {
             ExceptionsCollector::class,
             config_collector::class,
             moodle_collector::class,
+            string_manager_collector::class,
         ];
 
         foreach ($collectors as $collector) {
@@ -164,6 +169,14 @@ class debugbar extends BaseDebugBar {
      */
     public function get_messages_collector(): ?MessagesCollector {
         return $this->get_collector('messages', MessagesCollector::class);
+    }
+
+    /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return string_manager_collector|null
+     */
+    public function get_string_manager_collector(): ?string_manager_collector {
+        return $this->get_collector('string_manager', string_manager_collector::class);
     }
 
     /**
