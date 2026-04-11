@@ -82,6 +82,11 @@ class debugbar extends BaseDebugBar {
 
         $this->get_config_collector()?->populate();
 
+        // Configure the message collector to trace messages but ignore this file.
+        $message = $this->get_messages_collector();
+        $message?->collectFileTrace(true);
+        $message?->addBacktraceExcludePaths(['/local/devtools/classes/local/debugbar.php']);
+
         // Set our own handlers to log errors and exceptions to the debugbar.
         set_error_handler([$this, 'error_handler']);
         set_exception_handler([$this, 'exception_handler']);
@@ -210,7 +215,42 @@ class debugbar extends BaseDebugBar {
      * @param mixed[] $context
      * @return void
      */
-    public function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
-        $this->get_messages_collector()?->log($level->value, $message, $context);
+    public static function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
+        self::instance()->get_messages_collector()?->log($level->value, $message, $context);
+    }
+
+    /**
+     * Measures execution time and logs it.
+     *
+     * // phpcs:disable moodle.Commenting.ValidTags
+     * @template TReturn
+     *
+     * @param string $name A descriptive name for the measurement.
+     * @param callable():TReturn $callback The callable to be executed.
+     * @param bool $logreturn Whether to log the returned callback results.
+     * @param float $duration
+     * @return TReturn
+     * // phpcs:enable
+     */
+    public static function measure(
+        string $name,
+        callable $callback,
+        bool $logreturn = false,
+        ?float &$duration = null
+    ) {
+        $start = microtime(true);
+        $result = $callback();
+        $end = microtime(true);
+        $duration = $end - $start;
+
+        self::log("Measure: $name took {$duration}s ($start - $end)");
+
+        if ($logreturn) {
+            self::log($result);
+        }
+
+        self::instance()->get_time_data_collector()?->addMeasure($name, $start, $end);
+
+        return $result;
     }
 }
