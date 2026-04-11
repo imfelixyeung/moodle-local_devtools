@@ -82,6 +82,11 @@ class debugbar extends BaseDebugBar {
 
         $this->get_config_collector()?->populate();
 
+        // Configure the message collector to trace messages but ignore this file.
+        $message = $this->get_messages_collector();
+        $message?->collectFileTrace(true);
+        $message?->addBacktraceExcludePaths(['/local/devtools/classes/local/debugbar.php']);
+
         // Set our own handlers to log errors and exceptions to the debugbar.
         set_error_handler([$this, 'error_handler']);
         set_exception_handler([$this, 'exception_handler']);
