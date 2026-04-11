@@ -31,6 +31,7 @@ use core\context\system;
 use core\output\html_writer;
 use core\url;
 use local_devtools\local\debugbar;
+use local_devtools\local\debugbar\log_level;
 use Symfony\Component\VarDumper\VarDumper;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -90,5 +91,33 @@ echo html_writer::tag(
     html_writer::tag('code', 'Dumping the $DB global variable to show the wrapped PDO connection.')
 );
 VarDumper::dump($DB);
+
+// Logging to the messages area.
+debugbar::log('Information');
+debugbar::log('Oops, an error', log_level::ERROR);
+debugbar::log('Warning!!', log_level::WARNING);
+debugbar::log((object) [
+    'Objects' => 'Are supported too',
+]);
+debugbar::log(new Exception('Exceptions'), log_level::CRITICAL);
+
+/**
+ * Slow function for demo
+ * @param string $id
+ * @return string
+ */
+function slow_function(string $id) {
+    sleep(1);
+    usleep(248160);
+    return "Slow function ID=$id completed";
+}
+
+$slowfuncresults = debugbar::measure('a slow function', fn() => slow_function('A'));
+echo html_writer::div($slowfuncresults);
+
+$duration = null;
+$slowfuncresults = debugbar::measure('a slow function', fn() => slow_function('B'), duration: $duration);
+echo html_writer::div($slowfuncresults);
+echo html_writer::div("That took {$duration}s!");
 
 echo $OUTPUT->footer();
