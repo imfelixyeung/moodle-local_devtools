@@ -29,8 +29,12 @@ use DebugBar\DebugBar as BaseDebugBar;
 use ErrorException;
 use local_devtools\local\debugbar\collectors\config_collector;
 use local_devtools\local\debugbar\collectors\moodle_collector;
+use local_devtools\local\debugbar\collectors\string_manager_collector;
 use local_devtools\local\debugbar\log_level;
 use Throwable;
+
+defined('MOODLE_INTERNAL') || die;
+require_once(__DIR__ . '/../../vendor/autoload.php');
 
 /**
  * Singleton class to manage the debugbar instance and renderer.
@@ -63,6 +67,7 @@ class debugbar extends BaseDebugBar {
             ExceptionsCollector::class,
             config_collector::class,
             moodle_collector::class,
+            string_manager_collector::class,
         ];
 
         foreach ($collectors as $collector) {
@@ -81,6 +86,11 @@ class debugbar extends BaseDebugBar {
         }
 
         $this->get_config_collector()?->populate();
+
+        // Configure the message collector to trace messages but ignore this file.
+        $message = $this->get_messages_collector();
+        $message?->collectFileTrace(true);
+        $message?->addBacktraceExcludePaths(['/local/devtools/classes/local/debugbar.php']);
 
         // Set our own handlers to log errors and exceptions to the debugbar.
         set_error_handler([$this, 'error_handler']);
@@ -162,6 +172,14 @@ class debugbar extends BaseDebugBar {
     }
 
     /**
+     * Get the exceptions collector instance, or null if it is not available or of the wrong type.
+     * @return string_manager_collector|null
+     */
+    public function get_string_manager_collector(): ?string_manager_collector {
+        return $this->get_collector('string_manager', string_manager_collector::class);
+    }
+
+    /**
      * Custom error handler to convert PHP errors to exceptions and log them to the debugbar.
      * @param int $errno
      * @param string $errstr
@@ -210,7 +228,42 @@ class debugbar extends BaseDebugBar {
      * @param mixed[] $context
      * @return void
      */
-    public function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
-        $this->get_messages_collector()?->log($level->value, $message, $context);
+    public static function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
+        self::instance()->get_messages_collector()?->log($level->value, $message, $context);
+    }
+
+    /**
+     * Measures execution time and logs it.
+     *
+     * // phpcs:disable moodle.Commenting.ValidTags
+     * @template TReturn
+     *
+     * @param string $name A descriptive name for the measurement.
+     * @param callable():TReturn $callback The callable to be executed.
+     * @param bool $logreturn Whether to log the returned callback results.
+     * @param float $duration
+     * @return TReturn
+     * // phpcs:enable
+     */
+    public static function measure(
+        string $name,
+        callable $callback,
+        bool $logreturn = false,
+        ?float &$duration = null
+    ) {
+        $start = microtime(true);
+        $result = $callback();
+        $end = microtime(true);
+        $duration = $end - $start;
+
+        self::log("Measure: $name took {$duration}s ($start - $end)");
+
+        if ($logreturn) {
+            self::log($result);
+        }
+
+        self::instance()->get_time_data_collector()?->addMeasure($name, $start, $end);
+
+        return $result;
     }
 }

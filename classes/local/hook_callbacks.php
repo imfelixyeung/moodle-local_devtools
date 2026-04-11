@@ -94,6 +94,8 @@ class hook_callbacks {
      * @return bool
      */
     public static function callbacks_enabled() {
+        // phpcs:ignore moodle.Commenting.InlineComment
+        // @phpstan-ignore if.alwaysFalse
         if (PHPUNIT_TEST) {
             return false;
         }

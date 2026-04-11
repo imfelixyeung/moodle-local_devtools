@@ -8,3 +8,11 @@ A collection of tools to help with the development of Moodle.
 ## Features
 
 - [PHP Debug Bar](https://php-debugbar.com/): A powerful debugging tool that provides insights into database queries, request parameters, and more.
+
+### String Manager Logging
+
+To enable, add the following to `config.php`:
+
+```php
+$CFG->customstringmanager = '\local_devtools\local\string_manager';
+```
