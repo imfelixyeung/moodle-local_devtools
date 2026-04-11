@@ -210,7 +210,7 @@ class debugbar extends BaseDebugBar {
      * @param mixed[] $context
      * @return void
      */
-    public function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
-        $this->get_messages_collector()?->log($level->value, $message, $context);
+    public static function log(mixed $message, log_level $level = log_level::INFO, array $context = []): void {
+        self::instance()->get_messages_collector()?->log($level->value, $message, $context);
     }
 }

@@ -93,12 +93,12 @@ echo html_writer::tag(
 VarDumper::dump($DB);
 
 // Logging to the messages area.
-debugbar::instance()->log('Information');
-debugbar::instance()->log('Oops, an error', log_level::ERROR);
-debugbar::instance()->log('Warning!!', log_level::WARNING);
-debugbar::instance()->log((object) [
+debugbar::log('Information');
+debugbar::log('Oops, an error', log_level::ERROR);
+debugbar::log('Warning!!', log_level::WARNING);
+debugbar::log((object) [
     'Objects' => 'Are supported too',
 ]);
-debugbar::instance()->log(new Exception('Exceptions'), log_level::CRITICAL);
+debugbar::log(new Exception('Exceptions'), log_level::CRITICAL);
 
 echo $OUTPUT->footer();
