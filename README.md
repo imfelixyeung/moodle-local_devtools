@@ -16,3 +16,7 @@ To enable, add the following to `config.php`:
 ```php
 $CFG->customstringmanager = '\local_devtools\local\string_manager';
 ```
+
+### CLI
+
+Run `php cli/run.php` to view available commands.
