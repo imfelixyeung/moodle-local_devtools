@@ -16,6 +16,7 @@
 
 namespace local_devtools\local\cli;
 
+use local_devtools\local\cli\commands\plugins\plugins_list;
 use Symfony\Component\Console\Application as BaseApplication;
 
 /**
@@ -31,5 +32,6 @@ class application extends BaseApplication {
      */
     public function __construct() {
         parent::__construct('devtools');
+        $this->addCommand(new plugins_list());
     }
 }
