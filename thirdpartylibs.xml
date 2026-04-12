@@ -30,4 +30,10 @@
         <version>1.33.0</version>
         <license>MIT</license>
     </library>
+    <library>
+        <location>vendor/symfony/console</location>
+        <name>Symfony Console</name>
+        <version>7.4.8</version>
+        <license>MIT</license>
+    </library>
 </libraries>
