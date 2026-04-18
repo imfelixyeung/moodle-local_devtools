@@ -33,6 +33,7 @@ use local_devtools\local\debugbar\collectors\moodle_collector;
 use local_devtools\local\debugbar\collectors\string_manager_collector;
 use local_devtools\local\debugbar\log_level;
 use Throwable;
+use function array_key_exists;
 
 defined('MOODLE_INTERNAL') || die;
 require_once(__DIR__ . '/../../vendor/autoload.php');
@@ -313,8 +314,12 @@ class debugbar extends BaseDebugBar {
      */
     public function __destruct() {
         // Let's not log the debugbar's open.php.
-        $url = $_SERVER['REQUEST_URI'];
-        if (\str_contains($url, '/local/devtools/debugbar/open.php')) {
+        if (!array_key_exists('REQUEST_URI', $_SERVER) || !($url = $_SERVER['REQUEST_URI'])) {
+            $this->stackData();
+            return;
+        }
+
+        if (str_contains($url, '/local/devtools/debugbar/open.php')) {
             return;
         }
 
