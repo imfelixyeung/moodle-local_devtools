@@ -26,6 +26,7 @@ use DebugBar\DataCollector\PhpInfoCollector;
 use DebugBar\DataCollector\RequestDataCollector;
 use DebugBar\DataCollector\TimeDataCollector;
 use DebugBar\DebugBar as BaseDebugBar;
+use DebugBar\Storage\SqliteStorage;
 use ErrorException;
 use local_devtools\local\debugbar\collectors\config_collector;
 use local_devtools\local\debugbar\collectors\moodle_collector;
@@ -50,8 +51,8 @@ class debugbar extends BaseDebugBar {
      * Private constructor to prevent direct instantiation.
      */
     private function __construct() {
-        $baseurl = new url('/local/devtools/vendor/php-debugbar/php-debugbar/resources');
-        $this->getJavascriptRenderer()->setBaseUrl($baseurl->out(false));
+        $this->init_storage();
+        $this->init_renderer();
 
         $editor = \local_devtools\local\config\debugbar::get_editor();
         if ($editor) {
@@ -265,5 +266,58 @@ class debugbar extends BaseDebugBar {
         self::instance()->get_time_data_collector()?->addMeasure($name, $start, $end);
 
         return $result;
+    }
+
+    /**
+     * Initialises the storage for debugbar.
+     * @return \DebugBar\Storage\AbstractStorage
+     */
+    private function init_storage() {
+        global $CFG;
+
+        $plugintempdir = "$CFG->tempdir/local_devtools";
+        mkdir($plugintempdir, recursive: true);
+
+        $storage = new SqliteStorage(
+            filepath: "$plugintempdir/debugbar.sqlite",
+            tableName: 'phpdebugbar',
+        );
+        $storage->prune(24);
+        $this->setStorage($storage);
+
+        return $storage;
+    }
+
+    /**
+     * Initialises the renderer for debugbar.
+     * @return \DebugBar\JavascriptRenderer
+     */
+    private function init_renderer() {
+        $renderer = $this->getJavascriptRenderer();
+
+        $baseurl = new url('/local/devtools/vendor/php-debugbar/php-debugbar/resources');
+        $renderer->setBaseUrl($baseurl->out(false));
+        $openurl = new url('/local/devtools/debugbar/open.php');
+        $renderer->setOpenHandlerUrl($openurl->out(false));
+
+        $renderer->setBindAjaxHandlerToFetch(true);
+        $renderer->setBindAjaxHandlerToXHR(true);
+        $renderer->setAjaxHandlerEnableTab(true);
+
+        return $renderer;
+    }
+
+    /**
+     * Store for later use.
+     * For example, inspecting a form submit with redirect.
+     */
+    public function __destruct() {
+        // Let's not log the debugbar's open.php.
+        $url = $_SERVER['REQUEST_URI'];
+        if (\str_contains($url, '/local/devtools/debugbar/open.php')) {
+            return;
+        }
+
+        $this->stackData();
     }
 }

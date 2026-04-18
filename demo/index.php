@@ -38,10 +38,23 @@ require_once(__DIR__ . '/../../../config.php');
 
 require_login();
 
+$shouldredirect = optional_param('redirect', false, PARAM_INT);
+
 $url = new url('/local/devtools/demo/index.php');
 $context = system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url($url);
+$PAGE->add_header_action(
+    $OUTPUT->single_button(
+        new url($url, ['redirect' => 5]),
+        "Redirect 5 times"
+    )
+);
+
+if ($shouldredirect) {
+    $DB->get_records('user', ['id' => -$shouldredirect]);
+    redirect(new url($url, ['redirect' => $shouldredirect - 1]));
+}
 
 echo $OUTPUT->header();
 
