@@ -14,37 +14,41 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli\commands\mcp;
+namespace local_devtools\local\cli\commands\database;
 
-use Mcp\Server;
-use Mcp\Server\Transport\StdioTransport;
+use local_devtools\local\api\database;
+use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Command to start the MCP server.
+ * Command to list all installed plugins.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[AsCommand(name: 'mcp:serve')]
-class mcp_serve extends Command {
+#[AsCommand(name: 'database:list')]
+class database_list extends Command {
     /**
      * Invoke
+     * @param string $component
+     * @param SymfonyStyle $io
      * @return int
      */
-    public function __invoke(): int {
-        // Build and run the server.
-        $server = Server::builder()
-            ->setServerInfo('Moodle devtools plugin MCP server', '0.0.1')
-            ->addTool([\local_devtools\local\mcp\tools\plugins::class, 'list'], 'list_plugins')
-            ->addTool([\local_devtools\local\mcp\tools\database::class, 'list_plugin_tables'], 'list_plugin_tables')
-            ->build();
+    public function __invoke(
+        #[Argument('The component name of the plugin.')] string $component,
+        SymfonyStyle $io,
+    ): int {
+        try {
+            $result = database::list_plugin_tables($component);
 
-        $transport = new StdioTransport();
-        $server->run($transport);
-
-        return 0;
+            $io->writeln(json_encode($result));
+            return 0;
+        } catch (\Throwable $th) {
+            $io->error($th->getMessage());
+            return 1;
+        }
     }
 }
