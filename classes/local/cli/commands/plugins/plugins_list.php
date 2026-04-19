@@ -16,7 +16,6 @@
 
 namespace local_devtools\local\cli\commands\plugins;
 
-use core\plugin_manager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
@@ -44,31 +43,8 @@ class plugins_list extends Command {
     ): int {
         // phpcs:ignore moodle.NamingConventions.ValidVariableName.VariableNameLowerCase
         $includestandard = $includeStandard;
-        $manager = plugin_manager::instance();
-        /** @var array<string, array<string, \core\plugininfo\base>> $plugininfo */
-        $plugininfo = $manager->get_plugins();
 
-        $results = [];
-
-        foreach ($plugininfo as $type => $plugins) {
-            foreach ($plugins as $name => $plugin) {
-                $isstandard = $plugin->is_standard();
-                if (!$includestandard && $isstandard) {
-                    continue;
-                }
-
-                $results[] = [
-                    'type' => $plugin->type,
-                    'name' => $plugin->name,
-                    'version' => $plugin->versiondb,
-                    'release' => $plugin->release,
-                    'component' => $plugin->component,
-                    'directory' => $plugin->rootdir,
-                    'standard' => $isstandard,
-                    'enabled' => $plugin->is_enabled(),
-                ];
-            }
-        }
+        $results = \local_devtools\local\api\plugins::list($includestandard);
 
         if ($json) {
             $jsonstring = json_encode($results);
