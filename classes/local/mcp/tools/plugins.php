@@ -25,7 +25,8 @@ namespace local_devtools\local\mcp\tools;
  */
 class plugins {
     /**
-     * List installed (third party) plugins in the Moodle instance.
+     * List installed plugins in the Moodle instance.
+     * @param bool $includestandardplugins If Moodle core (non third party) plugins should be included.
      * @return object{
      *   'plugins': array{
      *     component: string,
@@ -39,8 +40,8 @@ class plugins {
      *   }[]
      * }
      */
-    public static function list() {
-        $plugins = \local_devtools\local\api\plugins::list();
+    public static function list(bool $includestandardplugins = false) {
+        $plugins = \local_devtools\local\api\plugins::list($includestandardplugins);
         return (object) ['plugins' => $plugins];
     }
 }
