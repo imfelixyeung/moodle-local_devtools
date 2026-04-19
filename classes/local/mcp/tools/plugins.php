@@ -35,8 +35,8 @@ class plugins {
      *     release: mixed,
      *     standard: bool,
      *     type: string,
-     *     version: int|string[]
-     *   }
+     *     version: int|string
+     *   }[]
      * }
      */
     public static function list() {
