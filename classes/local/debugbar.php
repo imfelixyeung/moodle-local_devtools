@@ -277,7 +277,9 @@ class debugbar extends BaseDebugBar {
         global $CFG;
 
         $plugintempdir = "$CFG->tempdir/local_devtools";
-        mkdir($plugintempdir, recursive: true);
+        if (!is_dir($plugintempdir)) {
+            mkdir($plugintempdir, recursive: true);
+        }
 
         $storage = new SqliteStorage(
             filepath: "$plugintempdir/debugbar.sqlite",
