@@ -33,6 +33,7 @@ jobs:
                         "MOODLE_405_STABLE",
                         "MOODLE_500_STABLE",
                         "MOODLE_501_STABLE",
+                        "MOODLE_502_STABLE",
                         "main",
                     ]
                 database: [mariadb]
