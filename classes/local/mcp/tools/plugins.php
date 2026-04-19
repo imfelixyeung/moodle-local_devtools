@@ -40,7 +40,7 @@ class plugins {
      *   }[]
      * }
      */
-    public static function list(bool $includestandardplugins = false) {
+    public static function list_plugins(bool $includestandardplugins = false) {
         $plugins = \local_devtools\local\api\plugins::list($includestandardplugins);
         return (object) ['plugins' => $plugins];
     }

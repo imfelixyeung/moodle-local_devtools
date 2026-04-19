@@ -38,8 +38,8 @@ class mcp_serve extends Command {
         // Build and run the server.
         $server = Server::builder()
             ->setServerInfo('Moodle devtools plugin MCP server', '0.0.1')
-            ->addTool([\local_devtools\local\mcp\tools\plugins::class, 'list'], 'list_plugins')
-            ->addTool([\local_devtools\local\mcp\tools\database::class, 'list_plugin_tables'], 'list_plugin_tables')
+            ->addTool([\local_devtools\local\mcp\tools\plugins::class, 'list_plugins'])
+            ->addTool([\local_devtools\local\mcp\tools\database::class, 'list_plugin_tables'])
             ->build();
 
         $transport = new StdioTransport();
