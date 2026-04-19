@@ -14,36 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli\commands\mcp;
-
-use Mcp\Server;
-use Mcp\Server\Transport\StdioTransport;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
+namespace local_devtools\local\mcp\tools;
 
 /**
- * Command to start the MCP server.
+ * Plugins API.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[AsCommand(name: 'mcp:serve')]
-class mcp_serve extends Command {
+class plugins {
     /**
-     * Invoke
-     * @return int
+     * List installed (third party) plugins in the Moodle instance.
+     * @return object{
+     *   'plugins': array{
+     *     component: string,
+     *     directory: string,
+     *     enabled: bool|null,
+     *     name: string,
+     *     release: mixed,
+     *     standard: bool,
+     *     type: string,
+     *     version: int|string[]
+     *   }
+     * }
      */
-    public function __invoke(): int {
-        // Build and run the server.
-        $server = Server::builder()
-            ->setServerInfo('Moodle devtools plugin MCP server', '0.0.1')
-            ->addTool([\local_devtools\local\mcp\tools\plugins::class, 'list'], 'list_plugins')
-            ->build();
-
-        $transport = new StdioTransport();
-        $server->run($transport);
-
-        return 0;
+    public static function list() {
+        $plugins = \local_devtools\local\api\plugins::list();
+        return (object) ['plugins' => $plugins];
     }
 }
