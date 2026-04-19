@@ -17,6 +17,16 @@ To enable, add the following to `config.php`:
 $CFG->customstringmanager = '\local_devtools\local\string_manager';
 ```
 
+### AJAX Requests Support
+
+To enable, add the following to `/lib/ajax/service.php`:
+
+```php
+header('Content-Type: application/json; charset=utf-8');
+\local_devtools\local\debugbar::instance()->sendDataInHeaders(); // Add this.
+echo json_encode($responses);
+```
+
 ### CLI
 
 Run `php cli/run.php` to view available commands.
