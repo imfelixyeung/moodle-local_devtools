@@ -14,26 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
+namespace local_devtools\local\cli\commands\mcp;
 
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+use Mcp\Server;
+use Mcp\Server\Transport\StdioTransport;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
 
 /**
- * Devtools console application.
+ * Command to start the MCP server.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+#[AsCommand(name: 'mcp:serve')]
+class mcp_serve extends Command {
     /**
-     * Constructor.
+     * Invoke
+     * @return int
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new mcp_serve());
+    public function __invoke(): int {
+        // Build and run the server.
+        $server = Server::builder()
+            ->setServerInfo('Moodle devtools plugin MCP server', '0.0.1')
+            ->setDiscovery(__DIR__, ['.'])
+            ->build();
+
+        $transport = new StdioTransport();
+        $server->run($transport);
+
+        return 0;
     }
 }
