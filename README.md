@@ -29,4 +29,21 @@ echo json_encode($responses);
 
 ### CLI
 
-Run `php cli/run.php` to view available commands.
+Run `php /path/to/moodle/public/local/devtools/cli/run.php` to view available commands.
+
+### MCP Server
+
+The MCP server provides useful tools for agentic coding workflows.
+
+Add the following configuration to your `mcp.json` file to enable.
+
+```json
+{
+  "mcpServers": {
+    "moodle-devtools": {
+      "command": "php",
+      "args": ["/path/to/moodle/public/local/devtools/cli/run.php", "mcp:serve"]
+    }
+  }
+}
+```
