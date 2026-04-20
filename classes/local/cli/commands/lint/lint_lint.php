@@ -14,30 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
+namespace local_devtools\local\cli\commands\lint;
 
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\lint\lint_lint;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+use local_devtools\local\lint\linters\eslint;
+use Symfony\Component\Console\Attribute\Argument;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Devtools console application.
+ * Command to lint a directory or file.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+#[AsCommand(name: 'lint:lint')]
+class lint_lint extends Command {
     /**
-     * Constructor.
+     * Invoke
+     * @return int
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
-        $this->addCommand(new lint_lint());
+    public function __invoke(
+        #[Argument('Directory of file path to lint')] string $path,
+        SymfonyStyle $io
+    ): int {
+        global $CFG;
+        chdir($CFG->root);
+
+        $linter = new eslint();
+        $result = $linter->lint_file($path);
+        var_dump($result);
+        return 0;
     }
 }

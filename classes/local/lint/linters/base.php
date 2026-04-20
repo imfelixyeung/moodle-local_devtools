@@ -14,30 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
-
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\lint\lint_lint;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+namespace local_devtools\local\lint\linters;
 
 /**
- * Devtools console application.
- *
+ * The abstract base linter.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+abstract class base {
     /**
-     * Constructor.
+     * Lints a single file.
+     * @param string $filepath
+     * @return array
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
-        $this->addCommand(new lint_lint());
-    }
+    abstract public function lint_file(string $filepath): array;
 }

@@ -14,30 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
-
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\lint\lint_lint;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+namespace local_devtools\local\lint;
 
 /**
- * Devtools console application.
- *
+ * Enum for severity.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+enum severity: string {
+    case info = 'info';
+    case warning = 'warning';
+    case error = 'error';
+    case unknown = 'unknown';
+
     /**
-     * Constructor.
+     * Gets severity from eslint.
+     * @param int $severity
+     * @return severity
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
-        $this->addCommand(new lint_lint());
+    public static function from_eslint(int $severity) {
+        return match ($severity) {
+            0 => self::info,
+            1 => self::warning,
+            2 => self::error,
+            default => self::unknown,
+        };
     }
 }
