@@ -86,6 +86,30 @@ class issue {
     }
 
     /**
+     * Factory method to create from an stylelint warning.
+     * @param object $warningobj
+     * @return void
+     */
+    public static function from_stylelint_warning(object $warningobj): self {
+        var_dump($warningobj);
+        $line = self::object_property($warningobj, 'line');
+        $column = self::object_property($warningobj, 'column');
+        $rule = self::object_property($warningobj, 'rule');
+        $severity = self::object_property($warningobj, 'severity');
+        $text = self::object_property($warningobj, 'text');
+        // The message also includes nodeType, messageId, endLine, endColumn, but we won't use it.
+
+        return new self(
+            $line,
+            $column,
+            $text,
+            $rule,
+            'stylelint',
+            severity::from_stylelint($severity),
+        );
+    }
+
+    /**
      * Utility function to get an object's property value, with fallback value.
      * @param object $object
      * @param string $property

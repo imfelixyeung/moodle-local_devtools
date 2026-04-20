@@ -41,4 +41,17 @@ enum severity: string {
             default => self::unknown,
         };
     }
+
+    /**
+     * Gets severity from stylelint.
+     * @param string $severity
+     * @return severity
+     */
+    public static function from_stylelint(string $severity) {
+        return match ($severity) {
+            'warning' => self::warning,
+            'error' => self::error,
+            default => self::unknown,
+        };
+    }
 }
