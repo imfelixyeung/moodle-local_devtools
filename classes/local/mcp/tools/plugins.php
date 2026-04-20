@@ -14,28 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
-
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+namespace local_devtools\local\mcp\tools;
 
 /**
- * Devtools console application.
+ * Plugins API.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+class plugins {
     /**
-     * Constructor.
+     * List installed plugins in the Moodle instance.
+     * @param bool $includestandardplugins If Moodle core (non third party) plugins should be included.
+     * @return object{
+     *   'plugins': array{
+     *     component: string,
+     *     directory: string,
+     *     enabled: bool|null,
+     *     name: string,
+     *     release: mixed,
+     *     standard: bool,
+     *     type: string,
+     *     version: int|string
+     *   }[]
+     * }
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
+    public static function list_plugins(bool $includestandardplugins = false) {
+        $plugins = \local_devtools\local\api\plugins::list($includestandardplugins);
+        return (object) ['plugins' => $plugins];
     }
 }

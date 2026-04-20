@@ -14,28 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
-
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+namespace local_devtools\local\mcp\tools;
 
 /**
- * Devtools console application.
+ * Plugins API.
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+class database {
     /**
-     * Constructor.
+     * List database schema defined for a given plugin.
+     * This will return the tables, fields, keys and indexes for the plugin.
+     * @param string $component The plugin component name. E.g. mod_assign.
+     * @return object
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
+    public static function list_plugin_tables(string $component): object {
+        try {
+            $tables = \local_devtools\local\api\database::list_plugin_tables($component);
+            return (object) ['data' => $tables];
+        } catch (\Throwable $th) {
+            return (object) ['error' => $th->getMessage()];
+        }
     }
 }
