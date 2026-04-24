@@ -20,13 +20,14 @@ use local_devtools\local\lint\issue;
 use local_devtools\local\lint\severity;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use function array_key_exists;
 use function get_called_class;
 
 /**
  * The abstract base linter.
  *
  * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
- * @phpstan-type FilesWithIssues array{file: string, issues: issue[]}
+ * @phpstan-type FileWithIssues array{file: string, issues: issue[]}
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
@@ -63,7 +64,7 @@ class base {
     /**
      * Lints a single file.
      * @param string $filepath
-     * @return FilesWithIssues
+     * @return FileWithIssues[]
      */
     public function lint_file(string $filepath): array {
         if (!$this->can_lint_file($filepath)) {
@@ -92,7 +93,7 @@ class base {
     /**
      * Lints a single directory.
      * @param string $directorypath
-     * @return FilesWithIssues
+     * @return FileWithIssues[]
      */
     public function lint_directory(string $directorypath): array {
         $results = [];
@@ -101,9 +102,9 @@ class base {
         );
 
         foreach ($iterator as $path) {
-            $lintresult = $this->lint_file($path);
-            if ($lintresult) {
-                $results[] = $lintresult;
+            $lintresults = $this->lint_file($path);
+            if ($lintresults) {
+                $results = [...$results, ...$lintresults];
             }
         }
 
@@ -113,7 +114,7 @@ class base {
     /**
      * Lints a given path.
      * @param string $path
-     * @return FilesWithIssues
+     * @return FileWithIssues[]
      */
     public function lint(string $path): array {
         if (is_dir($path)) {
@@ -125,16 +126,18 @@ class base {
         }
 
         return [
-            'file' => $path,
-            'issues' => [
-                new issue(
-                    0,
-                    0,
-                    "Path not found",
-                    "path-must-exist",
-                    "base",
-                    severity::error
-                ),
+            [
+                'file' => $path,
+                'issues' => [
+                    new issue(
+                        0,
+                        0,
+                        "Path not found",
+                        "path-must-exist",
+                        "base",
+                        severity::error
+                    ),
+                ],
             ],
         ];
     }
@@ -177,5 +180,29 @@ class base {
         }
 
         return true;
+    }
+
+    /**
+     * Flatten linter results into one single array.
+     * @param FileWithIssues[][] $linterresults
+     * @return FileWithIssues
+     */
+    public static function flatten_results(array $linterresults): array {
+        /** @var array<string,FileWithIssues> $filemap */
+        $filemap = [];
+
+        foreach ($linterresults as $results) {
+            foreach ($results as $fileresult) {
+                $file = $fileresult['file'];
+                $issues = $fileresult['issues'];
+                if (array_key_exists($file, $filemap)) {
+                    $filemap[$file]['issues'] = [...$filemap[$file]['issues'], ...$issues];
+                } else {
+                    $filemap[$file] = $fileresult;
+                }
+            }
+        }
+
+        return array_values($filemap);
     }
 }

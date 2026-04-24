@@ -51,7 +51,7 @@ class lint_lint extends Command {
 
         $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
 
-        $io->writeln(json_encode($results));
+        $io->writeln(json_encode(base::flatten_results($results)));
         return 0;
     }
 }
