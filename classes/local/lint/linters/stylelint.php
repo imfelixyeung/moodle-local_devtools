@@ -65,7 +65,7 @@ class stylelint extends base {
                 }
             }
 
-            $result[] = [
+            $results[] = [
                 'file' => $lintedfile->source,
                 'issues' => $issues,
             ];
