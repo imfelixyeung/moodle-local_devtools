@@ -27,8 +27,11 @@ use Symfony\Component\Process\Process;
  */
 class stylelint extends base {
     #[\Override]
-    public static function get_patterns(): array {
-        return ['*.css', '*.scss'];
+    public static function get_include_patterns(): array {
+        return [
+            ...parent::get_include_patterns(),
+            ...['*.css', '*.scss'],
+        ];
     }
 
     #[\Override]

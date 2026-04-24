@@ -27,8 +27,19 @@ use Symfony\Component\Process\Process;
  */
 class eslint extends base {
     #[\Override]
-    public static function get_patterns(): array {
-        return ['*.js'];
+    public static function get_include_patterns(): array {
+        return [
+            ...parent::get_include_patterns(),
+            ...['*.js'],
+        ];
+    }
+
+    #[\Override]
+    public static function get_exclude_patterns(): array {
+        return [
+            ...parent::get_exclude_patterns(),
+            ...['**/amd/build/**', '**/yui/build/**'],
+        ];
     }
 
     #[\Override]

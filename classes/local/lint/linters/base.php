@@ -33,11 +33,19 @@ use RecursiveIteratorIterator;
  */
 class base {
     /**
-     * Declares file patterns to match for.
+     * Declares file patterns to include.
      * @return string[]
      */
-    public static function get_patterns(): array {
-        return ['*'];
+    public static function get_include_patterns(): array {
+        return [];
+    }
+
+    /**
+     * Declares file patterns to exclude.
+     * @return string[]
+     */
+    public static function get_exclude_patterns(): array {
+        return ['**/.git/**', '**/vendor/**'];
     }
 
     /**
@@ -46,13 +54,14 @@ class base {
      * @return FilesWithIssues
      */
     public function lint_file(string $filepath): array {
+        if (!$this->can_lint_file($filepath)) {
+            return [];
+        }
+
         $result = [
             'file' => $filepath,
             'issues' => [],
         ];
-        if (!$this->can_lint_file($filepath)) {
-            return $result;
-        }
 
         if (!file_exists($filepath)) {
             $result['issues'][] = new issue(
@@ -80,7 +89,10 @@ class base {
         );
 
         foreach ($iterator as $path) {
-            $results[] = $this->lint_file($path);
+            $lintresult = $this->lint_file($path);
+            if ($lintresult) {
+                $results[] = $lintresult;
+            }
         }
 
         return $results;
@@ -116,14 +128,15 @@ class base {
     }
 
     /**
-     * Checks if a given filepath can be linted by the current linter.
-     * @param string $filepath
+     * Checks if a given path matches some patterns.
+     * @param string $path
+     * @param string[] $patterns
      * @return bool
      */
-    public function can_lint_file(string $filepath): bool {
-        // As long as it matches one of the PATTERNS, it passes.
-        foreach (static::get_patterns() as $pattern) {
-            $match = fnmatch($pattern, $filepath);
+    private function path_match_patterns($path, $patterns): bool {
+        // As long as it matches one of the PATTERNS.
+        foreach ($patterns as $pattern) {
+            $match = fnmatch($pattern, $path);
             if (!$match) {
                 continue;
             }
@@ -132,5 +145,25 @@ class base {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if a given filepath can be linted by the current linter.
+     * Must match one of the include patterns AND none of the exclude patterns.
+     * @param string $filepath
+     * @return bool
+     */
+    public function can_lint_file(string $filepath): bool {
+        $includematch = $this->path_match_patterns($filepath, $this->get_include_patterns());
+        if (!$includematch) {
+            return false;
+        }
+
+        $excludematch = $this->path_match_patterns($filepath, $this->get_exclude_patterns());
+        if ($excludematch) {
+            return false;
+        }
+
+        return true;
     }
 }
