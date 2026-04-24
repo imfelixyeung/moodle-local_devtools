@@ -26,8 +26,16 @@ use Symfony\Component\Process\Process;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class eslint extends base {
+    /** @var string[] */
+    public const PATTERNS = ['*.js'];
+
     #[\Override]
     public function lint_file(string $filepath): array {
+        $results = parent::lint_file($filepath);
+        if (!$this->can_lint_file($filepath)) {
+            return $results;
+        }
+
         $filepath = realpath($filepath);
         if ($filepath === false) {
             return [];
@@ -37,13 +45,10 @@ class eslint extends base {
         $process->run();
 
         $output = $process->getOutput();
-        echo $output;
         $jsonoutput = json_decode($output);
         if ($jsonoutput === null) {
             return [];
         }
-
-        $result = [];
 
         foreach ($jsonoutput as $lintedfile) {
             $issues = [];
@@ -52,12 +57,12 @@ class eslint extends base {
                 $issues[] = issue::from_eslint_message($message);
             }
 
-            $result = [
+            $results[] = [
                 'file' => $lintedfile->filePath,
                 'issues' => $issues,
             ];
         }
 
-        return $result;
+        return $results;
     }
 }

@@ -67,7 +67,6 @@ class issue {
      * @return void
      */
     public static function from_eslint_message(object $messageobj): self {
-        var_dump($messageobj);
         $ruleid = self::object_property($messageobj, 'ruleId');
         $severity = self::object_property($messageobj, 'severity', 0);
         $message = self::object_property($messageobj, 'message');
@@ -91,7 +90,6 @@ class issue {
      * @return void
      */
     public static function from_stylelint_warning(object $warningobj): self {
-        var_dump($warningobj);
         $line = self::object_property($warningobj, 'line');
         $column = self::object_property($warningobj, 'column');
         $rule = self::object_property($warningobj, 'rule');

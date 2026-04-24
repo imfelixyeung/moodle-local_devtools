@@ -16,7 +16,9 @@
 
 namespace local_devtools\local\cli\commands\lint;
 
+use local_devtools\local\lint\linters\base;
 use local_devtools\local\lint\linters\eslint;
+use local_devtools\local\lint\linters\stylelint;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -42,9 +44,14 @@ class lint_lint extends Command {
         global $CFG;
         chdir($CFG->root);
 
-        $linter = new eslint();
-        $result = $linter->lint_file($path);
-        var_dump($result);
+        $linters = [
+            new eslint(),
+            new stylelint(),
+        ];
+
+        $results = array_map(fn(base $linter) => $linter->lint_file($path), $linters);
+
+        $io->writeln(json_encode($results));
         return 0;
     }
 }
