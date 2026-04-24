@@ -22,6 +22,10 @@ use Symfony\Component\Process\Process;
 
 /**
  * The 'php -l' linter.
+ *
+ * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
+ * @phpstan-import-type FileWithIssues from base
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -47,14 +51,39 @@ class phpcs extends base {
             return [];
         }
 
-        $process = new Process(['phpcs', '--cache', '-q', '--report=json', $filepath]);
+        return [...$results, ...$this->execute_phpcs($filepath)];
+    }
+
+    #[\Override]
+    public function lint_directory(string $directorypath): array {
+        return $this->execute_phpcs($directorypath);
+    }
+
+    /**
+     * Executes phpcs on a given path.
+     * @param string $path
+     * @return FileWithIssues[]
+     */
+    private function execute_phpcs($path): array {
+        $process = new Process(['phpcs', '--cache', '-q', '--report=json', $path]);
         $process->run();
 
         $output = $process->getOutput();
+        return $this->parse_phpcs_json($output, $path);
+    }
+
+    /**
+     * Parses the PHPCS JSON result.
+     * @param string $output
+     * @param string $path
+     * @return FileWithIssues[]
+     */
+    private function parse_phpcs_json(string $output, string $path) {
+        $results = [];
         $jsonoutput = json_decode($output);
         if ($jsonoutput === null) {
             $results[] = [
-                'file' => (string) $filepath,
+                'file' => (string) $path,
                 'issues' => [
                     new issue(
                         0,
