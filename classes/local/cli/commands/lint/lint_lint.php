@@ -23,6 +23,7 @@ use local_devtools\local\lint\linters\phplint;
 use local_devtools\local\lint\linters\stylelint;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -33,7 +34,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-#[AsCommand(name: 'lint:lint')]
+#[AsCommand(name: 'lint:lint', description: 'All linters are enabled by default unless explicitly selected.')]
 class lint_lint extends Command {
     /**
      * Invoke
@@ -41,17 +42,30 @@ class lint_lint extends Command {
      */
     public function __invoke(
         #[Argument('Directory of file path to lint')] string $path,
-        SymfonyStyle $io
+        SymfonyStyle $io,
+        #[Option('Enable the eslint linter')] bool $eslint = false,
+        #[Option('Enable the php-codesniffer linter')] bool $phpcs = false,
+        #[Option('Enable the php -l linter')] bool $phplint = false,
+        #[Option('Enable the stylelint linter')] bool $stylelint = false,
     ): int {
         global $CFG;
         chdir($CFG->root);
 
+        // If all linter flags are false, then turn all back on.
+        if (array_unique([$eslint, $phpcs, $phplint, $stylelint]) === [false]) {
+            $eslint = true;
+            $phpcs = true;
+            $phplint = true;
+            $stylelint = true;
+        }
+
         $linters = [
-            new eslint(),
-            new stylelint(),
-            new phplint(),
-            new phpcs(),
+            $eslint ? new eslint() : null,
+            $phpcs ? new phpcs() : null,
+            $phplint ? new phplint() : null,
+            $stylelint ? new stylelint() : null,
         ];
+        $linters = array_filter($linters, fn($linter) => $linter !== null);
 
         $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
 
