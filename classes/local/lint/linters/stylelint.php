@@ -56,7 +56,10 @@ class stylelint extends base {
             $issues = [];
             $warnings = $lintedfile->warnings;
             foreach ($warnings as $warning) {
-                $issues[] = issue::from_stylelint_warning($warning);
+                $issue[] = issue::from_stylelint_warning($warning);
+                if ($issue) {
+                    $issues[] = $issue;
+                }
             }
 
             $result[] = [

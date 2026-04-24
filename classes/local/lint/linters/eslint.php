@@ -56,7 +56,10 @@ class eslint extends base {
             $issues = [];
             $messages = $lintedfile->messages;
             foreach ($messages as $message) {
-                $issues[] = issue::from_eslint_message($message);
+                $issue = issue::from_eslint_message($message);
+                if ($issue) {
+                    $issues[] = $issue;
+                }
             }
 
             $results[] = [

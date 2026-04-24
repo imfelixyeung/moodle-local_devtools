@@ -64,15 +64,20 @@ class issue {
     /**
      * Factory method to create from an eslint message.
      * @param object $messageobj
-     * @return void
+     * @return self|null
      */
-    public static function from_eslint_message(object $messageobj): self {
+    public static function from_eslint_message(object $messageobj): ?self {
         $ruleid = self::object_property($messageobj, 'ruleId');
         $severity = self::object_property($messageobj, 'severity', 0);
         $message = self::object_property($messageobj, 'message');
         $line = self::object_property($messageobj, 'line');
         $column = self::object_property($messageobj, 'column');
         // The message also includes nodeType, messageId, endLine, endColumn, but we won't use it.
+
+        // Some messages return empty ruleId, ignore those for now.
+        if (!$ruleid) {
+            return null;
+        }
 
         return new self(
             $line,
@@ -87,9 +92,9 @@ class issue {
     /**
      * Factory method to create from an stylelint warning.
      * @param object $warningobj
-     * @return void
+     * @return self|null
      */
-    public static function from_stylelint_warning(object $warningobj): self {
+    public static function from_stylelint_warning(object $warningobj): ?self {
         $line = self::object_property($warningobj, 'line');
         $column = self::object_property($warningobj, 'column');
         $rule = self::object_property($warningobj, 'rule');
