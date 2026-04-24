@@ -58,7 +58,11 @@ class base {
      * @return string[]
      */
     public static function get_exclude_patterns(): array {
-        return ['**/.git/**', '**/vendor/**'];
+        return [
+            '**/.git/**',
+            '**/node_modules/**',
+            '**/vendor/**',
+        ];
     }
 
     /**
