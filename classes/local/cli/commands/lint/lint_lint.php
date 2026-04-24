@@ -18,6 +18,7 @@ namespace local_devtools\local\cli\commands\lint;
 
 use local_devtools\local\lint\linters\base;
 use local_devtools\local\lint\linters\eslint;
+use local_devtools\local\lint\linters\phplint;
 use local_devtools\local\lint\linters\stylelint;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -47,6 +48,7 @@ class lint_lint extends Command {
         $linters = [
             new eslint(),
             new stylelint(),
+            new phplint(),
         ];
 
         $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
