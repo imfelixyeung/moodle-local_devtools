@@ -26,8 +26,10 @@ use Symfony\Component\Process\Process;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class stylelint extends base {
-    /** @var string[] */
-    public const PATTERNS = ['*.css', '*.scss'];
+    #[\Override]
+    public static function get_patterns(): array {
+        return ['*.css', '*.scss'];
+    }
 
     #[\Override]
     public function lint_file(string $filepath): array {

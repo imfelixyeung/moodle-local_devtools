@@ -18,21 +18,32 @@ namespace local_devtools\local\lint\linters;
 
 use local_devtools\local\lint\issue;
 use local_devtools\local\lint\severity;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * The abstract base linter.
+ *
+ * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
+ * @phpstan-type FilesWithIssues array{file: string, issues: issue[]}
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base {
-    /** @var string[] */
-    public const PATTERNS = ['*'];
+    /**
+     * Declares file patterns to match for.
+     * @return string[]
+     */
+    public static function get_patterns(): array {
+        return ['*'];
+    }
 
     /**
      * Lints a single file.
      * @param string $filepath
-     * @return array{file: string, issues: issue[]}
+     * @return FilesWithIssues
      */
     public function lint_file(string $filepath): array {
         $result = [
@@ -54,7 +65,54 @@ class base {
             );
         }
 
-        return $result;
+        return [$result];
+    }
+
+    /**
+     * Lints a single directory.
+     * @param string $directorypath
+     * @return FilesWithIssues
+     */
+    public function lint_directory(string $directorypath): array {
+        $results = [];
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directorypath, RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $path) {
+            $results[] = $this->lint_file($path);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Lints a given path.
+     * @param string $path
+     * @return FilesWithIssues
+     */
+    public function lint(string $path): array {
+        if (is_dir($path)) {
+            return $this->lint_directory($path);
+        }
+
+        if (is_file($path)) {
+            return $this->lint_file($path);
+        }
+
+        return [
+            'file' => $path,
+            'issues' => [
+                new issue(
+                    0,
+                    0,
+                    "Path not found",
+                    "path-must-exist",
+                    "base",
+                    severity::error
+                ),
+            ],
+        ];
     }
 
     /**
@@ -64,8 +122,8 @@ class base {
      */
     public function can_lint_file(string $filepath): bool {
         // As long as it matches one of the PATTERNS, it passes.
-        foreach (self::PATTERNS as $pattern) {
-            $match = fnmatch($pattern, $filepath, FNM_PATHNAME);
+        foreach (static::get_patterns() as $pattern) {
+            $match = fnmatch($pattern, $filepath);
             if (!$match) {
                 continue;
             }

@@ -49,7 +49,7 @@ class lint_lint extends Command {
             new stylelint(),
         ];
 
-        $results = array_map(fn(base $linter) => $linter->lint_file($path), $linters);
+        $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
 
         $io->writeln(json_encode($results));
         return 0;

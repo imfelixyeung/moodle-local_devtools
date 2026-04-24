@@ -26,8 +26,10 @@ use Symfony\Component\Process\Process;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class eslint extends base {
-    /** @var string[] */
-    public const PATTERNS = ['*.js'];
+    #[\Override]
+    public static function get_patterns(): array {
+        return ['*.js'];
+    }
 
     #[\Override]
     public function lint_file(string $filepath): array {
