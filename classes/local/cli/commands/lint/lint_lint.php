@@ -18,6 +18,7 @@ namespace local_devtools\local\cli\commands\lint;
 
 use local_devtools\local\lint\linters\base;
 use local_devtools\local\lint\linters\eslint;
+use local_devtools\local\lint\linters\lang;
 use local_devtools\local\lint\linters\phpcs;
 use local_devtools\local\lint\linters\phplint;
 use local_devtools\local\lint\linters\stylelint;
@@ -44,6 +45,7 @@ class lint_lint extends Command {
         #[Argument('Directory of file path to lint')] string $path,
         SymfonyStyle $io,
         #[Option('Enable the eslint linter')] bool $eslint = false,
+        #[Option('Enable the lang dir linter')] bool $lang = false,
         #[Option('Enable the php-codesniffer linter')] bool $phpcs = false,
         #[Option('Enable the php -l linter')] bool $phplint = false,
         #[Option('Enable the stylelint linter')] bool $stylelint = false,
@@ -52,8 +54,9 @@ class lint_lint extends Command {
         chdir($CFG->root);
 
         // If all linter flags are false, then turn all back on.
-        if (array_unique([$eslint, $phpcs, $phplint, $stylelint]) === [false]) {
+        if (array_unique([$eslint, $lang, $phpcs, $phplint, $stylelint]) === [false]) {
             $eslint = true;
+            $lang = true;
             $phpcs = true;
             $phplint = true;
             $stylelint = true;
@@ -61,6 +64,7 @@ class lint_lint extends Command {
 
         $linters = [
             $eslint ? new eslint() : null,
+            $lang ? new lang() : null,
             $phpcs ? new phpcs() : null,
             $phplint ? new phplint() : null,
             $stylelint ? new stylelint() : null,
