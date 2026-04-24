@@ -54,4 +54,18 @@ enum severity: string {
             default => self::unknown,
         };
     }
+
+    /**
+     * Gets severity from phpcs.
+     * @param int $severity
+     * @return severity
+     */
+    public static function from_phpcs(int $severity) {
+        return match (true) {
+            $severity <= 0 => self::info,
+            $severity <= 4 => self::warning,
+            $severity === 5 => self::error,
+            default => self::unknown,
+        };
+    }
 }

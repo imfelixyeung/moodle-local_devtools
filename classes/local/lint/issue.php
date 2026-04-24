@@ -113,6 +113,28 @@ class issue {
     }
 
     /**
+     * Factory method to create from an phpcs warning.
+     * @param object $messageobj
+     * @return self|null
+     */
+    public static function from_phpcs_message(object $messageobj): ?self {
+        $line = self::object_property($messageobj, 'line');
+        $column = self::object_property($messageobj, 'column');
+        $source = self::object_property($messageobj, 'source');
+        $severity = self::object_property($messageobj, 'severity');
+        $message = self::object_property($messageobj, 'message');
+
+        return new self(
+            $line,
+            $column,
+            $message,
+            $source,
+            'phpcs',
+            severity::from_phpcs($severity),
+        );
+    }
+
+    /**
      * Utility function to get an object's property value, with fallback value.
      * @param object $object
      * @param string $property
