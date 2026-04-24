@@ -36,7 +36,7 @@ use function get_called_class;
 class base {
     /**
      * Gets the name of the linter.
-     * @return bool
+     * @return string
      */
     public static function get_name(): string {
         $classname = get_called_class();
@@ -185,7 +185,7 @@ class base {
     /**
      * Flatten linter results into one single array.
      * @param FileWithIssues[][] $linterresults
-     * @return FileWithIssues
+     * @return FileWithIssues[]
      */
     public static function flatten_results(array $linterresults): array {
         /** @var array<string,FileWithIssues> $filemap */
