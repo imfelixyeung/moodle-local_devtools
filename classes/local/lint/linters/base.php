@@ -20,6 +20,7 @@ use local_devtools\local\lint\issue;
 use local_devtools\local\lint\severity;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use function get_called_class;
 
 /**
  * The abstract base linter.
@@ -32,6 +33,17 @@ use RecursiveIteratorIterator;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base {
+    /**
+     * Gets the name of the linter.
+     * @return bool
+     */
+    public static function get_name(): string {
+        $classname = get_called_class();
+        $parts = explode('\\', $classname);
+        $name = array_pop($parts) ?: 'unknown';
+        return $name;
+    }
+
     /**
      * Declares file patterns to include.
      * @return string[]
