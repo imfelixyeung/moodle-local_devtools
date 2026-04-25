@@ -28,6 +28,11 @@ use Symfony\Component\Process\Process;
  */
 class phplint extends base {
     #[\Override]
+    public static function get_description(): ?string {
+        return 'executes "php -l" for syntax checking';
+    }
+
+    #[\Override]
     public static function get_include_patterns(): array {
         return [
             ...parent::get_include_patterns(),

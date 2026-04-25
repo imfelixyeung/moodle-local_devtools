@@ -70,7 +70,11 @@ class linter {
      */
     public static function get_linters_info(array $linters): array {
         $info = array_values(array_map(
-            fn(/** @var class-string<base> $linter */ $linter) => $linter::get_name(),
+            function (/** @var class-string<base> $linter */ $linter) {
+                $name = $linter::get_name();
+                $description = $linter::get_description();
+                return $description ? "$name: $description" : $name;
+            },
             $linters
         ));
         return $info;

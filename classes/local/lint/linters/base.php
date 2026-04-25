@@ -70,6 +70,14 @@ class base {
     }
 
     /**
+     * Gets the summary description of the linter.
+     * @return string|null
+     */
+    public static function get_description(): ?string {
+        return null;
+    }
+
+    /**
      * Declares file patterns to include.
      * @return string[]
      */

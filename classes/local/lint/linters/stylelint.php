@@ -27,6 +27,11 @@ use Symfony\Component\Process\Process;
  */
 class stylelint extends base {
     #[\Override]
+    public static function get_description(): ?string {
+        return 'executes "eslint" on stylesheets against project coding standards';
+    }
+
+    #[\Override]
     public static function get_include_patterns(): array {
         return [
             ...parent::get_include_patterns(),

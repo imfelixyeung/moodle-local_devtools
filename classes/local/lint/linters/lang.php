@@ -55,6 +55,11 @@ use function strlen;
  */
 class lang extends base {
     #[\Override]
+    public static function get_description(): ?string {
+        return 'executes language string consistency checking against lang/*/*.php files';
+    }
+
+    #[\Override]
     public static function get_include_patterns(): array {
         return [
             ...parent::get_include_patterns(),
