@@ -23,10 +23,6 @@ use Mcp\Schema\ToolAnnotations;
 /**
  * Lints files.
  *
- * // phpcs:disable moodle.Commenting.ValidTags.Invalid
- * @phpstan-import-type FileWithIssues from \local_devtools\local\lint\linters\base
- * // phpcs:enable moodle.Commenting.ValidTags.Invalid
- *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,7 +33,7 @@ class lint {
      * @param string[] $paths absolute paths to files or directories that needs linting
      * @return object{
      *     linters: string[], // list of linters that have run
-     *     files: FileWithIssues[], // list of files and their issues
+     *     files: \local_devtools\local\lint\schemas\file[], // list of files and their issues
      * }
      */
     #[McpTool(

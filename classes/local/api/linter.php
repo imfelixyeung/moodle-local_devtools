@@ -22,14 +22,11 @@ use local_devtools\local\lint\linters\lang;
 use local_devtools\local\lint\linters\phpcs;
 use local_devtools\local\lint\linters\phplint;
 use local_devtools\local\lint\linters\stylelint;
+use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Console\Helper\ProgressIndicator;
 
 /**
  * Linter API.
- *
- * // phpcs:disable moodle.Commenting.ValidTags.Invalid
- * @phpstan-import-type FileWithIssues from base
- * // phpcs:enable moodle.Commenting.ValidTags.Invalid
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
@@ -85,7 +82,7 @@ class linter {
      * @param string[] $paths
      * @param class-string<base>[] $linterclasses
      * @param ProgressIndicator $progress
-     * @return FileWithIssues[]
+     * @return file[]
      */
     public static function run(array $paths, array $linterclasses, ?ProgressIndicator $progress = null): array {
         $linters = array_map(fn(/** @var class-string<base> $linterclass */ $linterclass) => new $linterclass(), $linterclasses);

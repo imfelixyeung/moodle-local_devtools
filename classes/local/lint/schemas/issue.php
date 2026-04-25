@@ -14,15 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\lint;
+namespace local_devtools\local\lint\schemas;
+
+use JsonSerializable;
+use local_devtools\local\lint\severity;
 
 /**
  * Class representing a single linter issue.
+ *
+ * // phpcs:disable moodle.Commenting.ValidTags.Invalid
+ * @phpstan-type issue_data array{
+ *     line: int,
+ *     column: int,
+ *     message: string,
+ *     rule: string|null,
+ *     source: string,
+ *     severity: severity,
+ * }
+ * // phpcs:enable moodle.Commenting.ValidTags.Invalid
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class issue {
+class issue implements JsonSerializable {
     /** @var int Line number of the issue */
     public int $line;
     /** @var int Column of the issue */
@@ -171,5 +186,20 @@ class issue {
             $source,
             $severity,
         );
+    }
+
+    /**
+     * Get data to be serialised.
+     * @return issue_data
+     */
+    public function jsonSerialize(): array {
+        return [
+            'line' => $this->line,
+            'column' => $this->column,
+            'message' => $this->message,
+            'rule' => $this->rule,
+            'source' => $this->source,
+            'severity' => $this->severity,
+        ];
     }
 }

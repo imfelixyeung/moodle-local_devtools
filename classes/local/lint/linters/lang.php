@@ -16,8 +16,9 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\issue;
+use local_devtools\local\lint\schemas\issue;
 use local_devtools\local\lint\severity;
+use local_devtools\local\lint\schemas\file;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use function array_key_exists;
@@ -29,8 +30,6 @@ use function strlen;
  * The lang dir linter.
  *
  * // phpcs:disable moodle.Commenting.ValidTags.Invalid
- * @phpstan-import-type FileWithIssues from base
- *
  * @phpstan-type LangString string
  * @phpstan-type StringIdentifier string
  * @phpstan-type Locale string
@@ -79,7 +78,7 @@ class lang extends base {
         $results = $this->lint_directory($langdir);
         $results = array_filter(
             $results,
-            fn(/** @var FileWithIssues $result */ $result) => $result['file'] === $filepath
+            fn(file $result) => $result->file === $filepath
         );
         return $results;
     }
@@ -93,7 +92,7 @@ class lang extends base {
         $results = $this->validate($stringdata);
         $results = array_filter(
             $results,
-            fn(/** @var FileWithIssues $result */ $result) => str_starts_with($result['file'], $directorypath)
+            fn(file $result) => str_starts_with($result->file, $directorypath)
         );
         return $results;
     }
@@ -255,7 +254,7 @@ class lang extends base {
     /**
      * Validates all strings.
      * @param NormalisedLangdirs $langdirdata
-     * @return FileWithIssues[]
+     * @return file[]
      */
     private function validate(array $langdirdata): array {
         $results = [];
@@ -271,7 +270,7 @@ class lang extends base {
      * Validates all strings.
      * @param LangDir $langdir
      * @param NormalisedComponents $components
-     * @return FileWithIssues[]
+     * @return file[]
      */
     private function validate_components(string $langdir, array $components): array {
         $results = [];
@@ -288,7 +287,7 @@ class lang extends base {
      * @param LangDir $langdir
      * @param Component $component
      * @param NormalisedComponentData $componentdata
-     * @return FileWithIssues[]
+     * @return file[]
      */
     private function validate_component(string $langdir, string $component, array $componentdata): array {
         $results = [];
@@ -413,7 +412,7 @@ class lang extends base {
      * @param string|null $rule
      * @param string $source
      * @param severity $severity
-     * @return FileWithIssues
+     * @return file
      */
     private static function single_file_issue(
         string $path,
@@ -421,13 +420,11 @@ class lang extends base {
         ?string $rule,
         string $source = 'lang',
         severity $severity = severity::error,
-    ): array {
-        return [
-            'file' => $path,
-            'issues' => [
-                issue::simple($message, $rule, $source, $severity),
-            ],
-        ];
+    ): file {
+        return new file(
+            $path,
+            [issue::simple($message, $rule, $source, $severity)]
+        );
     }
 
     /**

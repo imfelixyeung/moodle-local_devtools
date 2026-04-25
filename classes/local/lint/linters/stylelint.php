@@ -16,7 +16,8 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\issue;
+use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
 /**
@@ -71,10 +72,7 @@ class stylelint extends base {
                 }
             }
 
-            $results[] = [
-                'file' => (string) $lintedfile->source,
-                'issues' => $issues,
-            ];
+            $results[] = new file((string) $lintedfile->source, $issues);
         }
 
         return $results;

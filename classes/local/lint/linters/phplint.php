@@ -16,8 +16,9 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\issue;
+use local_devtools\local\lint\schemas\issue;
 use local_devtools\local\lint\severity;
+use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
 /**
@@ -52,10 +53,7 @@ class phplint extends base {
             return [];
         }
 
-        $fileresult = [
-            'file' => (string) $filepath,
-            'issues' => [],
-        ];
+        $fileresult = new file($filepath);
 
         $this->set_progress_file($filepath);
         $process = new Process(['php', '-l', $filepath]);
@@ -67,14 +65,14 @@ class phplint extends base {
         }
 
         $output = $process->getOutput();
-        $fileresult['issues'][] = new issue(
+        $fileresult->add_issue(new issue(
             0,
             0,
             trim($output),
             'php-file-must-parse-successfully',
             $this->get_name(),
             severity::error,
-        );
+        ));
 
         $results[] = $fileresult;
         return $results;

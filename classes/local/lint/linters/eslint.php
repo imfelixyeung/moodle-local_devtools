@@ -16,7 +16,8 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\issue;
+use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
 /**
@@ -79,10 +80,7 @@ class eslint extends base {
                 }
             }
 
-            $results[] = [
-                'file' => $lintedfile->filePath,
-                'issues' => $issues,
-            ];
+            $results[] = new file($lintedfile->filePath, $issues);
         }
 
         return $results;

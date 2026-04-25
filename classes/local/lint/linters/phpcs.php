@@ -16,15 +16,13 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\issue;
+use local_devtools\local\lint\schemas\issue;
 use local_devtools\local\lint\severity;
+use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
 /**
  * The 'php -l' linter.
- *
- * // phpcs:ignore moodle.Commenting.ValidTags.Invalid
- * @phpstan-import-type FileWithIssues from base
  *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
@@ -69,7 +67,7 @@ class phpcs extends base {
     /**
      * Executes phpcs on a given path.
      * @param string $path
-     * @return FileWithIssues[]
+     * @return file[]
      */
     private function execute_phpcs($path): array {
         $process = new Process(['phpcs', '--cache', '-q', '--report=json', $path], timeout: MINSECS * 15);
@@ -83,25 +81,21 @@ class phpcs extends base {
      * Parses the PHPCS JSON result.
      * @param string $output
      * @param string $path
-     * @return FileWithIssues[]
+     * @return file[]
      */
     private function parse_phpcs_json(string $output, string $path) {
         $results = [];
         $jsonoutput = json_decode($output);
         if ($jsonoutput === null) {
-            $results[] = [
-                'file' => (string) $path,
-                'issues' => [
-                    new issue(
-                        0,
-                        0,
-                        "'phpcs' returned non-JSON output.",
-                        'phpcs-json-error',
-                        $this->get_name(),
-                        severity::error,
-                    ),
-                ],
-            ];
+            $issue = new issue(
+                0,
+                0,
+                "'phpcs' returned non-JSON output.",
+                'phpcs-json-error',
+                $this->get_name(),
+                severity::error,
+            );
+            $results[] = new file($path, [$issue]);
             return $results;
         }
 
@@ -115,10 +109,7 @@ class phpcs extends base {
                 }
             }
 
-            $results[] = [
-                'file' => (string) $path,
-                'issues' => $issues,
-            ];
+            $results[] = new file($path, $issues);
         }
 
         return $results;
