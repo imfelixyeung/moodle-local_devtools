@@ -22,6 +22,17 @@ use xmldb_file;
 /**
  * Plugins API.
  *
+ * // phpcs:disable moodle.Files.LineLength.TooLong
+ * // phpcs:disable moodle.Commenting.ValidTags.Invalid
+ * @phpstan-type DatabaseField array{name:string, comment:string, type:string}
+ * @phpstan-type DatabaseKeyReferences array{table:string, fields:string[]}
+ * @phpstan-type DatabaseKey array{name:string, comment:string, type: string, fields: string[], references: DatabaseKeyReferences}
+ * @phpstan-type DatabaseIndex array{name:string, comment:string, unique: bool, fields: string[]}
+ * @phpstan-type DatabaseTable array{name:string, comment:string, fields: DatabaseField[], keys: DatabaseKey[], indexes: DatabaseIndex[]}
+ * @phpstan-type PluginDatabase array{name:string, comment:string, tables: DatabaseTable[]}
+ * // phpcs:enable moodle.Commenting.ValidTags.Invalid
+ * // phpcs:disable moodle.Files.LineLength.TooLong
+ *
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,7 +41,7 @@ class database {
     /**
      * List database tables for a given plugin.
      * @param string $component
-     * @return array;
+     * @return PluginDatabase
      */
     public static function list_plugin_tables(string $component): array {
         $plugins = plugins::list(true);
@@ -105,6 +116,7 @@ class database {
 
             $tableresults[] = [
                 'name' => $table->getName(),
+                'comment' => $table->getComment(),
                 'fields' => $fieldsresults,
                 'keys' => $keysresults,
                 'indexes' => $indexesresults,
@@ -153,6 +165,7 @@ class database {
             3 => 'foreign',
             4 => 'check',
             5 => 'foreign_and_unique',
+            default => 'unknown',
         };
     }
 }
