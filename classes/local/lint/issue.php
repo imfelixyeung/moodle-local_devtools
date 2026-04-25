@@ -148,4 +148,28 @@ class issue {
 
         return $object->{$property};
     }
+
+    /**
+     * Helper function to create a simple issue.
+     * @param string $message
+     * @param string|null $rule
+     * @param string $source
+     * @param severity $severity
+     * @return self
+     */
+    public static function simple(
+        string $message,
+        ?string $rule = null,
+        string $source = 'unknown',
+        severity $severity = severity::error,
+    ): self {
+        return new self(
+            0,
+            0,
+            $message,
+            $rule,
+            $source,
+            $severity,
+        );
+    }
 }

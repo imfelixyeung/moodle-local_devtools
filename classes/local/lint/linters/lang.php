@@ -16,14 +16,20 @@
 
 namespace local_devtools\local\lint\linters;
 
+use local_devtools\local\lint\issue;
+use local_devtools\local\lint\severity;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use function array_key_exists;
+use function array_merge;
+use function in_array;
 
 /**
  * The lang dir linter.
  *
  * // phpcs:disable moodle.Commenting.ValidTags.Invalid
+ * @phpstan-import-type FileWithIssues from base
+ *
  * @phpstan-type LangString string
  * @phpstan-type StringIdentifier string
  * @phpstan-type Locale string
@@ -37,7 +43,8 @@ use function array_key_exists;
  *
  * @phpstan-type NormalisedLocaleStrings array<Locale, LangString>
  * @phpstan-type NormalisedIdentifiers array<StringIdentifier, NormalisedLocaleStrings>
- * @phpstan-type NormalisedComponents array<Component, NormalisedIdentifiers>
+ * @phpstan-type NormalisedComponentData array{locales:Locale[],identifiers:NormalisedIdentifiers}
+ * @phpstan-type NormalisedComponents array<Component, NormalisedComponentData>
  * @phpstan-type NormalisedLangdirs array<LangDir, NormalisedComponents>
  * // phpcs:enable moodle.Commenting.ValidTags.Invalid
  *
@@ -64,7 +71,7 @@ class lang extends base {
         $rawstringdata = $this->load_strings($directorypath);
         $stringdata = $this->normalise_strings($rawstringdata);
 
-        return [];
+        return $this->validate($stringdata);
     }
 
     /**
@@ -122,7 +129,7 @@ class lang extends base {
                         ? $manager->load_component_strings($component, $locale)
                         : self::load_component_strings(
                             $this->compose_lang_filepath($langdir, $component, $locale)
-                    );
+                        );
                 }
             }
         }
@@ -150,6 +157,7 @@ class lang extends base {
      * @return NormalisedLangdirs
      */
     private function normalise_strings(array $langdirdata): array {
+        /** @var NormalisedLangdirs $normalised */
         $normalised = [];
 
         foreach ($langdirdata as $langdir => $components) {
@@ -161,19 +169,207 @@ class lang extends base {
                         }
 
                         if (!array_key_exists($component, $normalised[$langdir])) {
-                            $normalised[$langdir][$component] = [];
+                            /** @var NormalisedComponentData $componentdata */
+                            $componentdata = [
+                                'locales' => array_keys($locales),
+                                'identifiers' => [],
+                            ];
+                            $normalised[$langdir][$component] = $componentdata;
                         }
 
-                        if (!array_key_exists($identifier, $normalised[$langdir][$component])) {
-                            $normalised[$langdir][$component][$identifier] = [];
+                        if (!array_key_exists($identifier, $normalised[$langdir][$component]['identifiers'])) {
+                            $normalised[$langdir][$component]['identifiers'][$identifier] = [];
                         }
 
-                        $normalised[$langdir][$component][$identifier][$locale] = $string;
+                        $normalised[$langdir][$component]['identifiers'][$identifier][$locale] = $string;
                     }
                 }
             }
         }
 
         return $normalised;
+    }
+
+    /**
+     * Validates all strings.
+     * @param NormalisedLangdirs $langdirdata
+     * @return FileWithIssues[]
+     */
+    private function validate(array $langdirdata): array {
+        $results = [];
+
+        foreach ($langdirdata as $langdir => $components) {
+            $results[] = $this->validate_components($langdir, $components);
+        }
+
+        return array_merge(...$results);
+    }
+
+    /**
+     * Validates all strings.
+     * @param LangDir $langdir
+     * @param NormalisedComponents $components
+     * @return FileWithIssues[]
+     */
+    private function validate_components(string $langdir, array $components): array {
+        $results = [];
+
+        foreach ($components as $component => $componentdata) {
+            $results[] = $this->validate_component($langdir, $component, $componentdata);
+        }
+
+        return array_merge(...$results);
+    }
+
+    /**
+     * Validates all strings.
+     * @param LangDir $langdir
+     * @param Component $component
+     * @param NormalisedComponentData $componentdata
+     * @return FileWithIssues[]
+     */
+    private function validate_component(string $langdir, string $component, array $componentdata): array {
+        $results = [];
+        ['locales' => $locales, 'identifiers' => $identifiers] = $componentdata;
+
+        $englishlocaleid = 'en';
+        $englishlangfilepath = self::compose_lang_filepath($langdir, $component, $englishlocaleid);
+
+        if (!in_array($englishlocaleid, $locales)) {
+            $results[] = self::single_file_issue(
+                $englishlangfilepath,
+                "Missing required '$englishlocaleid' locale",
+                "linting-requires-$englishlocaleid-locale"
+            );
+            return $results;
+        }
+
+        foreach ($identifiers as $identifier => $localesdata) {
+            $identifierlocales = array_keys($localesdata);
+
+            // Validate that all strings have the 'en' locale.
+            if (!in_array($englishlocaleid, $identifierlocales)) {
+                $results[] = self::single_file_issue(
+                    $englishlangfilepath,
+                    "Identifier '$identifier' is not present in the '$englishlocaleid' locale",
+                    'identifier-safely-missing',
+                    severity: severity::warning
+                );
+                continue;
+            }
+
+            // Validate that if a string has the 'en' locale, it should also have all other locales.
+            $missinglocales = array_diff($locales, $identifierlocales);
+            foreach ($missinglocales as $missinglocale) {
+                $results[] = self::single_file_issue(
+                    self::compose_lang_filepath($langdir, $component, $missinglocale),
+                    "Identifier '$identifier' missing from '$missinglocale' locale",
+                    'identifier-missing'
+                );
+            }
+
+            // Validate that there are no extra locales.
+            // Validate that if a string has the 'en' locale, it should also have all other locales.
+            $extralocales = array_diff($identifierlocales, $locales);
+            foreach ($extralocales as $extralocale) {
+                $results[] = self::single_file_issue(
+                    self::compose_lang_filepath($langdir, $component, $extralocale),
+                    "Identifier '$identifier' has extra '$extralocale' locale",
+                    'identifier-extra'
+                );
+            }
+
+            $englishstring = $localesdata[$englishlocaleid];
+            $requiredplaceholders = self::extract_placeholders($englishstring);
+
+            foreach ($localesdata as $locale => $string) {
+                $placeholders = self::extract_placeholders($string);
+                $missingplaceholders = array_diff($requiredplaceholders, $placeholders);
+                if ($missingplaceholders) {
+                    $placeholdersmsg = self::placeholders_to_string($missingplaceholders);
+                    $results[] = self::single_file_issue(
+                        self::compose_lang_filepath($langdir, $component, $locale),
+                        "Identifier '$identifier' is missing placeholders $placeholdersmsg in the '$locale' locale",
+                        'identifier-placeholders-missing'
+                    );
+                }
+
+                $extraplaceholders = array_diff($placeholders, $requiredplaceholders);
+                if ($extraplaceholders) {
+                    $placeholdersmsg = self::placeholders_to_string($extraplaceholders);
+                    $results[] = self::single_file_issue(
+                        self::compose_lang_filepath($langdir, $component, $locale),
+                        "Identifier '$identifier' has extra placeholders $placeholdersmsg in the '$locale' locale",
+                        'identifier-placeholders-extra'
+                    );
+                }
+
+                continue;
+            }
+
+            continue;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Utility function to recreate the language file path.
+     * @param string $langdir
+     * @param string $component
+     * @param string $locale
+     * @return string
+     */
+    private static function compose_lang_filepath(string $langdir, string $component, string $locale): string {
+        return implode(DIRECTORY_SEPARATOR, [$langdir, $locale, "$component.php"]);
+    }
+
+    /**
+     * Helper function to create a simple issue.
+     * @param string $message
+     * @param string|null $rule
+     * @param string $source
+     * @param severity $severity
+     * @return FileWithIssues
+     */
+    private static function single_file_issue(
+        string $path,
+        string $message,
+        string $rule,
+        string $source = 'lang',
+        severity $severity = severity::error,
+    ): array {
+        return [
+            'file' => $path,
+            'issues' => [
+                issue::simple($message, $rule, $source, $severity),
+            ],
+        ];
+    }
+
+    /**
+     * Extracts {$a} / {$a->key} placeholders from a given string.
+     * @param string $string
+     * @return array
+     */
+    private static function extract_placeholders(string $string): array {
+        static $regex = '/{\$a(?:->\w+)?}/';
+        $success = preg_match_all($regex, $string, $matches);
+        if ($success === false) {
+            return [];
+        }
+
+        return $matches[0];
+    }
+
+    /**
+     * Converts a set of placeholders into string suitable to use in the issue message.
+     * @param string[] $placeholders
+     * @return string
+     */
+    private static function placeholders_to_string(array $placeholders): string {
+        $placeholders = array_map(fn($placeholder) => "`$placeholder`", $placeholders);
+        $string = implode(',', $placeholders);
+        return "($string)";
     }
 }
