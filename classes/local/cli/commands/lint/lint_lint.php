@@ -53,6 +53,12 @@ class lint_lint extends Command {
         global $CFG;
         chdir($CFG->root);
 
+        $path = realpath($path);
+        if ($path === false) {
+            $io->error('Invalid path');
+            return -1;
+        }
+
         // If all linter flags are false, then turn all back on.
         if (array_unique([$eslint, $lang, $phpcs, $phplint, $stylelint]) === [false]) {
             $eslint = true;

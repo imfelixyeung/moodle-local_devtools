@@ -80,10 +80,56 @@ class lang extends base {
 
     #[\Override]
     public function lint_directory(string $directorypath): array {
-        $rawstringdata = $this->load_strings($directorypath);
+        $nearestlangdir = self::find_nearest_langdir_up($directorypath);
+        $rawstringdata = $this->load_strings($nearestlangdir);
         $stringdata = $this->normalise_strings($rawstringdata);
 
-        return $this->validate($stringdata);
+        $results = $this->validate($stringdata);
+        $results = array_filter(
+            $results,
+            fn(/** @var FileWithIssues $result */ $result) => str_starts_with($result['file'], $directorypath)
+        );
+        return $results;
+    }
+
+    /**
+     * Walks up the directory tree and find the nearest lang directory.
+     * @param string $directorypath
+     * @return string
+     */
+    private static function find_nearest_langdir_up(string $directorypath): string {
+        global $CFG;
+
+        $root = realpath($CFG->root);
+        if ($root === false) {
+            return $directorypath;
+        }
+
+        if (!str_starts_with($directorypath, $root)) {
+            return $directorypath;
+        }
+
+        // Prevent spilling out of the Moodle root.
+        $relativepath = substr($directorypath, strlen($root));
+        $segments = explode(DIRECTORY_SEPARATOR, $relativepath);
+
+        while ($segments) {
+            $currdir = array_pop($segments);
+            if ($currdir !== 'lang') {
+                continue;
+            }
+
+            $segments[] = 'lang';
+            break;
+        }
+
+        if (!$segments) {
+            return $directorypath;
+        }
+
+        $directorypath = $root . implode(DIRECTORY_SEPARATOR, $segments);
+
+        return $directorypath;
     }
 
     /**
