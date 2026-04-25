@@ -17,6 +17,8 @@
 namespace local_devtools\local\mcp\tools;
 
 use local_devtools\local\api\linter;
+use Mcp\Capability\Attribute\McpTool;
+use Mcp\Schema\ToolAnnotations;
 
 /**
  * Lints files.
@@ -38,6 +40,11 @@ class lint {
      *     files: FileWithIssues[], // list of files and their issues
      * }
      */
+    #[McpTool(
+        name: 'lint_files',
+        description: 'Runs project coding standard linters against files or directories',
+        annotations: new ToolAnnotations(readOnlyHint: true, destructiveHint: false, idempotentHint: true),
+    )]
     public static function lint_files(array $paths): object {
         global $CFG;
         $cwd = getcwd();
