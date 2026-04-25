@@ -23,6 +23,7 @@ use RecursiveIteratorIterator;
 use function array_key_exists;
 use function array_merge;
 use function in_array;
+use function strlen;
 
 /**
  * The lang dir linter.
