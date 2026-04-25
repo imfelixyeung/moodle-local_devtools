@@ -17,7 +17,6 @@
 namespace local_devtools\local\cli\commands\lint;
 
 use local_devtools\local\api\linter;
-use local_devtools\local\lint\linters\base;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -73,7 +72,7 @@ class lint_lint extends Command {
             ? new ProgressIndicator($output->getErrorOutput())
             : null;
 
-        $linters = linter::get_linters_names(
+        $linters = linter::get_linters_classnames(
             eslint: $eslint,
             lang: $lang,
             phpcs: $phpcs,
@@ -84,10 +83,7 @@ class lint_lint extends Command {
         $results = linter::run([$path], $linters, progress: $progressindicator);
 
         $json = json_encode([
-            'linters' => array_values(array_map(
-                fn(/** @var class-string<base> $linter */ $linter) => $linter::get_name(),
-                $linters
-            )),
+            'linters' => linter::get_linters_info($linters),
             'files' => $results,
         ]);
         if ($json === false) {

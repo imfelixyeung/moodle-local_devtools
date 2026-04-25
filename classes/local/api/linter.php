@@ -45,7 +45,7 @@ class linter {
      * @param bool $stylelint
      * @return class-string<base>[]
      */
-    public static function get_linters_names(
+    public static function get_linters_classnames(
         bool $eslint = true,
         bool $lang = true,
         bool $phpcs = true,
@@ -61,6 +61,19 @@ class linter {
         ];
         $linters = array_filter($linters, fn($linter) => $linter !== null);
         return $linters;
+    }
+
+    /**
+     * Utility function to get enabled linters.
+     * @param class-string<base>[] $linters
+     * @return string[]
+     */
+    public static function get_linters_info(array $linters): array {
+        $info = array_values(array_map(
+            fn(/** @var class-string<base> $linter */ $linter) => $linter::get_name(),
+            $linters
+        ));
+        return $info;
     }
 
     /**
