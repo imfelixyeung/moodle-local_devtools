@@ -69,10 +69,15 @@ class lang extends base {
 
     /**
      * Loads all strings in a given directory.
+     *
+     * Loading strings via the manager will fallback on undefined strings,
+     * so we add an option to disable and load directly from file.
+     *
      * @param string $directorypath
+     * @param bool $usestringmanager
      * @return RawLangdirs
      */
-    private function load_strings(string $directorypath): array {
+    private function load_strings(string $directorypath, bool $usestringmanager = false): array {
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($directorypath, RecursiveDirectoryIterator::SKIP_DOTS)
         );
@@ -109,21 +114,34 @@ class lang extends base {
             }
         }
 
-        $manager = get_string_manager();
+        $manager = $usestringmanager ? get_string_manager() : null;
         foreach ($langdirdata as $langdir => $components) {
             foreach ($components as $component => $locales) {
                 foreach ($locales as $locale => $strings) {
-                    $langdirdata[$langdir][$component][$locale] = $manager->load_component_strings(
-                        $component,
-                        $locale,
-                        disablecache: true,
-                        disablelocal: true
+                    $langdirdata[$langdir][$component][$locale] = $manager
+                        ? $manager->load_component_strings($component, $locale)
+                        : self::load_component_strings(
+                            $this->compose_lang_filepath($langdir, $component, $locale)
                     );
                 }
             }
         }
 
         return $langdirdata;
+    }
+
+    /**
+     * Loads language file strings.
+     * @return RawStrings
+     */
+    private static function load_component_strings(string $filepath): array {
+        try {
+            $string = [];
+            include($filepath);
+            return $string;
+        } catch (\Throwable $th) {
+            return [];
+        }
     }
 
     /**
