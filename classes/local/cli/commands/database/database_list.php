@@ -44,7 +44,7 @@ class database_list extends Command {
         try {
             $result = database::list_plugin_tables($component);
 
-            $io->writeln(json_encode($result));
+            $io->writeln(json_encode($result, JSON_THROW_ON_ERROR));
             return 0;
         } catch (\Throwable $th) {
             $io->error($th->getMessage());
