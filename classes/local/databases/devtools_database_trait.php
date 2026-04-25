@@ -93,6 +93,11 @@ trait devtools_database_trait {
         $this->executedstatements[] = $statement;
         $this->pdo->addExecutedStatement($statement);
 
+        // Gonna mark it as ended just to populate fields.
+        // When query_end runs, it will update to the correct data.
+        // This fixes the issue if DB errors, debugbar can't display the statement and crashes.
+        $statement->end();
+
         parent::query_start($sql, $params, $type, $extrainfo);
     }
     // phpcs:enable moodle.Commenting.MissingDocblock.Function
