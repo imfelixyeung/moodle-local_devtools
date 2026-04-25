@@ -42,7 +42,7 @@ class lint_lint extends Command {
      * @return int
      */
     public function __invoke(
-        #[Argument('Directory of file path to lint')] string $path,
+        #[Argument('Directory of file path to lint (must be absolute or relative to the Moodle root)')] string $path,
         SymfonyStyle $io,
         #[Option('Enable the eslint linter')] bool $eslint = false,
         #[Option('Enable the lang dir linter')] bool $lang = false,
