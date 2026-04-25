@@ -63,7 +63,19 @@ class lang extends base {
 
     #[\Override]
     public function lint_file(string $filepath): array {
-        return [];
+        $segments = self::split_lang_filepath($filepath);
+        if (!$segments) {
+            return [];
+        }
+
+        // Let's be really cheeky and just filter the lint_directory results for the current file.
+        [$langdir] = $segments;
+        $results = $this->lint_directory($langdir);
+        $results = array_filter(
+            $results,
+            fn(/** @var FileWithIssues $result */ $result) => $result['file'] === $filepath
+        );
+        return $results;
     }
 
     #[\Override]
@@ -98,15 +110,13 @@ class lang extends base {
             if (!$this->can_lint_file($path)) {
                 continue;
             }
-            $segments = explode(DIRECTORY_SEPARATOR, $path);
-            $component = array_pop($segments);
-            $component = str_replace('.php', '', $component);
-            $locale = array_pop($segments);
-            $langdir = implode(DIRECTORY_SEPARATOR, $segments);
 
-            if (!$component || !$locale || !$langdir) {
+            $segments = self::split_lang_filepath($path);
+            if (!$segments) {
                 continue;
             }
+
+            [$langdir, $locale, $component] = $segments;
 
             if (!array_key_exists($langdir, $langdirdata)) {
                 $langdirdata[$langdir] = [];
@@ -314,7 +324,28 @@ class lang extends base {
     }
 
     /**
+     * Splits the lang file into the /lang dir, locale code, and component name.
+     * Can use {@see self::split_lang_filepath} to reconstruct the file path from parts.
+     * @param string $filepath
+     * @return array{string, string, string} - lang dir, locale, component
+     */
+    private static function split_lang_filepath(string $filepath): ?array {
+        $segments = explode(DIRECTORY_SEPARATOR, $filepath);
+        $component = array_pop($segments);
+        $component = str_replace('.php', '', $component);
+        $locale = array_pop($segments);
+        $langdir = implode(DIRECTORY_SEPARATOR, $segments);
+
+        if (!$langdir || !$locale || !$component) {
+            return null;
+        }
+
+        return [$langdir, $locale, $component];
+    }
+
+    /**
      * Utility function to recreate the language file path.
+     * Can use {@see self::split_lang_filepath} to split the file path back into parts.
      * @param string $langdir
      * @param string $component
      * @param string $locale
