@@ -335,7 +335,7 @@ class lang extends base {
     private static function single_file_issue(
         string $path,
         string $message,
-        string $rule,
+        ?string $rule,
         string $source = 'lang',
         severity $severity = severity::error,
     ): array {
@@ -350,7 +350,7 @@ class lang extends base {
     /**
      * Extracts {$a} / {$a->key} placeholders from a given string.
      * @param string $string
-     * @return array
+     * @return string[]
      */
     private static function extract_placeholders(string $string): array {
         static $regex = '/{\$a(?:->\w+)?}/';
