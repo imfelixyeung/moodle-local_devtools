@@ -16,6 +16,7 @@
 
 namespace local_devtools\local\mcp\tools;
 
+use Exception;
 use local_devtools\local\api\linter;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\ToolAnnotations;
@@ -44,6 +45,9 @@ class lint {
     public static function lint_files(array $paths): object {
         global $CFG;
         $cwd = getcwd();
+        if ($cwd === false) {
+            throw new Exception('Unknown current working directory.');
+        }
 
         chdir($CFG->root);
         $linters = linter::get_linters_classnames();
