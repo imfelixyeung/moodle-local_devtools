@@ -16,7 +16,7 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\lint\schemas\issue\eslint as eslint_issue;
 use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
@@ -74,7 +74,7 @@ class eslint extends base {
             $issues = [];
             $messages = $lintedfile->messages;
             foreach ($messages as $message) {
-                $issue = issue::from_eslint_message($message);
+                $issue = eslint_issue::from_object($message);
                 if ($issue) {
                     $issues[] = $issue;
                 }

@@ -53,103 +53,12 @@ final class issue_test extends advanced_testcase {
     }
 
     /**
-     * Test that from_eslint_message creates issue from valid eslint object.
+     * Test that base from_object returns null.
      */
-    public function test_from_eslint_message_creates_issue_from_valid_object(): void {
-        $obj = (object) [
-            'ruleId' => 'no-unused-vars',
-            'severity' => 2,
-            'message' => 'Unused variable',
-            'line' => 5,
-            'column' => 10,
-        ];
-
-        $issue = issue::from_eslint_message($obj);
-
-        $this->assertNotNull($issue);
-        $this->assertSame(5, $issue->line);
-        $this->assertSame(10, $issue->column);
-        $this->assertSame('Unused variable', $issue->message);
-        $this->assertSame('no-unused-vars', $issue->rule);
-        $this->assertSame('eslint', $issue->source);
-        $this->assertSame(severity::error, $issue->severity);
-    }
-
-    /**
-     * Test that from_eslint_message returns null when ruleId is empty.
-     */
-    public function test_from_eslint_message_returns_null_when_rule_id_empty(): void {
-        $obj = (object) [
-            'ruleId' => '',
-            'severity' => 2,
-            'message' => 'Some message',
-            'line' => 1,
-            'column' => 1,
-        ];
-
-        $result = issue::from_eslint_message($obj);
+    public function test_from_object_returns_null(): void {
+        $obj = (object) ['some' => 'data'];
+        $result = issue::from_object($obj);
         $this->assertNull($result);
-    }
-
-    /**
-     * Test that from_eslint_message uses default severity when not provided.
-     */
-    public function test_from_eslint_message_uses_default_severity_when_missing(): void {
-        $obj = (object) [
-            'ruleId' => 'some-rule',
-            'message' => 'Message',
-            'line' => 1,
-            'column' => 1,
-        ];
-
-        $issue = issue::from_eslint_message($obj);
-        $this->assertSame(severity::info, $issue->severity);
-    }
-
-    /**
-     * Test that from_stylelint_warning creates issue from stylelint warning.
-     */
-    public function test_from_stylelint_warning_creates_issue(): void {
-        $obj = (object) [
-            'line' => 3,
-            'column' => 5,
-            'rule' => 'color-no-invalid-hex',
-            'severity' => 'error',
-            'text' => 'Unexpected invalid hex color',
-        ];
-
-        $issue = issue::from_stylelint_warning($obj);
-
-        $this->assertNotNull($issue);
-        $this->assertSame(3, $issue->line);
-        $this->assertSame(5, $issue->column);
-        $this->assertSame('Unexpected invalid hex color', $issue->message);
-        $this->assertSame('color-no-invalid-hex', $issue->rule);
-        $this->assertSame('stylelint', $issue->source);
-        $this->assertSame(severity::error, $issue->severity);
-    }
-
-    /**
-     * Test that from_phpcs_message creates issue from phpcs message.
-     */
-    public function test_from_phpcs_message_creates_issue(): void {
-        $obj = (object) [
-            'line' => 10,
-            'column' => 15,
-            'source' => 'Generic.WhiteSpace.ScopeIndent',
-            'severity' => 5,
-            'message' => 'Expected 4 spaces before',
-        ];
-
-        $issue = issue::from_phpcs_message($obj);
-
-        $this->assertNotNull($issue);
-        $this->assertSame(10, $issue->line);
-        $this->assertSame(15, $issue->column);
-        $this->assertSame('Expected 4 spaces before', $issue->message);
-        $this->assertSame('Generic.WhiteSpace.ScopeIndent', $issue->rule);
-        $this->assertSame('phpcs', $issue->source);
-        $this->assertSame(severity::error, $issue->severity);
     }
 
     /**

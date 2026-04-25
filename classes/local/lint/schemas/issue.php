@@ -77,76 +77,13 @@ class issue implements JsonSerializable {
     }
 
     /**
-     * Factory method to create from an eslint message.
-     * @param object $messageobj
+     * Factory method to create from a linter result object.
+     * @param object $object
      * @return self|null
      */
-    public static function from_eslint_message(object $messageobj): ?self {
-        $ruleid = self::object_property($messageobj, 'ruleId');
-        $severity = self::object_property($messageobj, 'severity', 0);
-        $message = self::object_property($messageobj, 'message');
-        $line = self::object_property($messageobj, 'line');
-        $column = self::object_property($messageobj, 'column');
-        // The message also includes nodeType, messageId, endLine, endColumn, but we won't use it.
-
-        // Some messages return empty ruleId, ignore those for now.
-        if (!$ruleid) {
-            return null;
-        }
-
-        return new self(
-            $line,
-            $column,
-            $message,
-            $ruleid,
-            'eslint',
-            severity::from_eslint($severity),
-        );
-    }
-
-    /**
-     * Factory method to create from an stylelint warning.
-     * @param object $warningobj
-     * @return self|null
-     */
-    public static function from_stylelint_warning(object $warningobj): ?self {
-        $line = self::object_property($warningobj, 'line');
-        $column = self::object_property($warningobj, 'column');
-        $rule = self::object_property($warningobj, 'rule');
-        $severity = self::object_property($warningobj, 'severity');
-        $text = self::object_property($warningobj, 'text');
-        // The message also includes nodeType, messageId, endLine, endColumn, but we won't use it.
-
-        return new self(
-            $line,
-            $column,
-            $text,
-            $rule,
-            'stylelint',
-            severity::from_stylelint($severity),
-        );
-    }
-
-    /**
-     * Factory method to create from an phpcs warning.
-     * @param object $messageobj
-     * @return self|null
-     */
-    public static function from_phpcs_message(object $messageobj): ?self {
-        $line = self::object_property($messageobj, 'line');
-        $column = self::object_property($messageobj, 'column');
-        $source = self::object_property($messageobj, 'source');
-        $severity = self::object_property($messageobj, 'severity');
-        $message = self::object_property($messageobj, 'message');
-
-        return new self(
-            $line,
-            $column,
-            $message,
-            $source,
-            'phpcs',
-            severity::from_phpcs($severity),
-        );
+    public static function from_object(object $object): ?self {
+        // To be overridden.
+        return null;
     }
 
     /**
@@ -156,7 +93,7 @@ class issue implements JsonSerializable {
      * @param mixed $default
      * @return mixed
      */
-    private static function object_property(object $object, string $property, mixed $default = null): mixed {
+    protected static function object_property(object $object, string $property, mixed $default = null): mixed {
         if (!property_exists($object, $property)) {
             return $default;
         }

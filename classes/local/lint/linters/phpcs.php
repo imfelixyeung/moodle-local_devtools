@@ -16,7 +16,7 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\lint\schemas\issue\phpcs as phpcs_issue;
 use local_devtools\local\lint\severity;
 use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
@@ -87,7 +87,7 @@ class phpcs extends base {
         $results = [];
         $jsonoutput = json_decode($output);
         if ($jsonoutput === null) {
-            $issue = new issue(
+            $issue = new phpcs_issue(
                 0,
                 0,
                 "'phpcs' returned non-JSON output.",
@@ -103,7 +103,7 @@ class phpcs extends base {
             $issues = [];
             $messages = $lintedfile->messages;
             foreach ($messages as $message) {
-                $issue = issue::from_phpcs_message($message);
+                $issue = phpcs_issue::from_object($message);
                 if ($issue) {
                     $issues[] = $issue;
                 }

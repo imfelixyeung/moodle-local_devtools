@@ -16,7 +16,7 @@
 
 namespace local_devtools\local\lint\linters;
 
-use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\lint\schemas\issue\stylelint as stylelint_issue;
 use local_devtools\local\lint\schemas\file;
 use Symfony\Component\Process\Process;
 
@@ -66,7 +66,7 @@ class stylelint extends base {
             $issues = [];
             $warnings = $lintedfile->warnings;
             foreach ($warnings as $warning) {
-                $issue = issue::from_stylelint_warning($warning);
+                $issue = stylelint_issue::from_object($warning);
                 if ($issue) {
                     $issues[] = $issue;
                 }
