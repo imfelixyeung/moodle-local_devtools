@@ -306,6 +306,7 @@ class debugbar extends BaseDebugBar {
         $renderer->setBindAjaxHandlerToFetch(true);
         $renderer->setBindAjaxHandlerToXHR(true);
         $renderer->setAjaxHandlerEnableTab(true);
+        $renderer->setAjaxHandlerAutoShow(false);
 
         return $renderer;
     }
