@@ -40,7 +40,7 @@ class lint_lint extends Command {
      * @return int
      */
     public function __invoke(
-        #[Argument('Directory of file path to lint (must be absolute or relative to the Moodle root)')] string $path,
+        #[Argument('Paths to lint (must be absolute or relative to the Moodle root)')] array $paths,
         SymfonyStyle $io,
         OutputInterface $output,
         #[Option('Enable the eslint linter')] bool $eslint = false,
@@ -55,9 +55,18 @@ class lint_lint extends Command {
         global $CFG;
         chdir($CFG->root);
 
-        $path = realpath($path);
-        if ($path === false) {
-            $io->error('Invalid path');
+        $realpaths = [];
+        foreach ($paths as $path) {
+            $realpath = realpath($path);
+            if ($realpath === false) {
+                $io->error("Invalid path: $path");
+                return -1;
+            }
+            $realpaths[] = $realpath;
+        }
+
+        if ($realpaths === []) {
+            $io->error('No paths provided');
             return -1;
         }
 
@@ -82,7 +91,7 @@ class lint_lint extends Command {
             stylelint: $stylelint
         );
 
-        $results = linter::run([$path], $linters, progress: $progressindicator);
+        $results = linter::run($realpaths, $linters, progress: $progressindicator);
 
         if ($json) {
             $jsonstring = json_encode([
