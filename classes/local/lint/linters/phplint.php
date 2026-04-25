@@ -52,6 +52,7 @@ class phplint extends base {
             'issues' => [],
         ];
 
+        $this->set_progress_file($filepath);
         $process = new Process(['php', '-l', $filepath]);
         $process->run();
 

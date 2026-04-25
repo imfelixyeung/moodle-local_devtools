@@ -51,11 +51,13 @@ class phpcs extends base {
             return [];
         }
 
+        $this->set_progress_file($filepath);
         return [...$results, ...$this->execute_phpcs($filepath)];
     }
 
     #[\Override]
     public function lint_directory(string $directorypath): array {
+        $this->set_progress_file($directorypath);
         return $this->execute_phpcs($directorypath);
     }
 

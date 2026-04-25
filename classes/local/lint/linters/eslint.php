@@ -54,6 +54,7 @@ class eslint extends base {
             return [];
         }
 
+        $this->set_progress_file($filepath);
         $process = new Process(['bunx', 'eslint', '--format', 'json', $filepath]);
         $process->run();
 

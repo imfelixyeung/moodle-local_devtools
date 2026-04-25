@@ -26,6 +26,9 @@ use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressIndicator;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
@@ -44,11 +47,13 @@ class lint_lint extends Command {
     public function __invoke(
         #[Argument('Directory of file path to lint (must be absolute or relative to the Moodle root)')] string $path,
         SymfonyStyle $io,
+        OutputInterface $output,
         #[Option('Enable the eslint linter')] bool $eslint = false,
         #[Option('Enable the lang dir linter')] bool $lang = false,
         #[Option('Enable the php-codesniffer linter')] bool $phpcs = false,
         #[Option('Enable the php -l linter')] bool $phplint = false,
         #[Option('Enable the stylelint linter')] bool $stylelint = false,
+        #[Option('Enable/disable the progress bar')] bool $progress = true,
     ): int {
         global $CFG;
         chdir($CFG->root);
@@ -68,16 +73,21 @@ class lint_lint extends Command {
             $stylelint = true;
         }
 
+        $progressindicator = $progress && $output instanceof ConsoleOutputInterface
+            ? new ProgressIndicator($output->getErrorOutput())
+            : null;
         $linters = [
-            $eslint ? new eslint() : null,
-            $lang ? new lang() : null,
-            $phpcs ? new phpcs() : null,
-            $phplint ? new phplint() : null,
-            $stylelint ? new stylelint() : null,
+            $eslint ? new eslint(progress: $progressindicator) : null,
+            $lang ? new lang(progress: $progressindicator) : null,
+            $phpcs ? new phpcs(progress: $progressindicator) : null,
+            $phplint ? new phplint(progress: $progressindicator) : null,
+            $stylelint ? new stylelint(progress: $progressindicator) : null,
         ];
         $linters = array_filter($linters, fn($linter) => $linter !== null);
 
+        $progressindicator?->start('Starting.');
         $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
+        $progressindicator?->finish('Done.');
 
         $json = json_encode([
             'linters' => array_values(array_map(fn(base $linter) => $linter::class::get_name(), $linters)),

@@ -20,6 +20,7 @@ use local_devtools\local\lint\issue;
 use local_devtools\local\lint\severity;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Symfony\Component\Console\Helper\ProgressIndicator;
 use function array_key_exists;
 use function get_called_class;
 
@@ -34,6 +35,29 @@ use function get_called_class;
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class base {
+    /** @var ProgressIndicator|null */
+    protected ?ProgressIndicator $progress;
+
+    /**
+     * Constructor
+     * @param ProgressIndicator $progress
+     */
+    public function __construct(?ProgressIndicator $progress = null) {
+        $this->progress = $progress;
+    }
+
+    /**
+     * Sets the processing file in the progress.
+     * @param string $path
+     * @return void
+     */
+    public function set_progress_file(string $path): void {
+        if (!$this->progress) {
+            return;
+        }
+        $this->progress->setMessage("Running {$this->get_name()} on $path...");
+    }
+
     /**
      * Gets the name of the linter.
      * @return string
@@ -106,6 +130,7 @@ class base {
         );
 
         foreach ($iterator as $path) {
+            $this->set_progress_file($path);
             $lintresults = $this->lint_file($path);
             if ($lintresults) {
                 $results = [...$results, ...$lintresults];
