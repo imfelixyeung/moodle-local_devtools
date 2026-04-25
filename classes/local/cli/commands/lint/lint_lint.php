@@ -79,7 +79,10 @@ class lint_lint extends Command {
 
         $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
 
-        $json = json_encode(base::flatten_results($results));
+        $json = json_encode([
+            'linters' => array_values(array_map(fn(base $linter) => $linter::class::get_name(), $linters)),
+            'files' => base::flatten_results($results),
+        ]);
         if ($json === false) {
             $io->error('Error encoding linter results JSON');
             return -1;
