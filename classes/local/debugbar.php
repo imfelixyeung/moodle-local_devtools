@@ -285,7 +285,7 @@ class debugbar extends BaseDebugBar {
             filepath: "$plugintempdir/debugbar.sqlite",
             tableName: 'phpdebugbar',
         );
-        $storage->prune(24);
+        $storage->prune(1);
         $this->setStorage($storage);
 
         return $storage;
