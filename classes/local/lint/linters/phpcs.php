@@ -67,7 +67,7 @@ class phpcs extends base {
      * @return FileWithIssues[]
      */
     private function execute_phpcs($path): array {
-        $process = new Process(['phpcs', '--cache', '-q', '--report=json', $path]);
+        $process = new Process(['phpcs', '--cache', '-q', '--report=json', $path], timeout: MINSECS * 15);
         $process->run();
 
         $output = $process->getOutput();
