@@ -97,4 +97,56 @@ final class file_test extends advanced_testcase {
         $this->assertSame('/path/to/file.php', $serialized['file']);
         $this->assertCount(1, $serialized['issues']);
     }
+
+    /**
+     * Test that format_path returns file path only when no location given.
+     */
+    public function test_format_path_returns_path_only_when_no_location(): void {
+        $file = new file('/path/to/file.php');
+        $result = $file->format_path();
+
+        $this->assertSame('/path/to/file.php', $result);
+    }
+
+    /**
+     * Test that format_path includes line when provided.
+     */
+    public function test_format_path_includes_line(): void {
+        $file = new file('/path/to/file.php');
+        $result = $file->format_path(line: 10);
+
+        $this->assertSame('/path/to/file.php:10', $result);
+    }
+
+    /**
+     * Test that format_path includes line and column when provided.
+     */
+    public function test_format_path_includes_line_and_column(): void {
+        $file = new file('/path/to/file.php');
+        $result = $file->format_path(line: 10, column: 5);
+
+        $this->assertSame('/path/to/file.php:10:5', $result);
+    }
+
+    /**
+     * Test that format_path skips null values in location.
+     */
+    public function test_format_path_skips_null_values(): void {
+        $file = new file('/path/to/file.php');
+        $result = $file->format_path(line: null, column: 5);
+
+        $this->assertSame('/path/to/file.php', $result);
+    }
+
+    /**
+     * Test that format_path returns link when decorate is true.
+     */
+    public function test_format_path_returns_link_when_decorate_true(): void {
+        $file = new file('/path/to/file.php');
+        $result = $file->format_path(line: 10, column: 5, decorate: true);
+
+        $this->assertStringContainsString('/path/to/file.php:10:5', $result);
+        $this->assertStringContainsString('<href=', $result);
+        $this->assertStringContainsString('vscode://file/', $result);
+    }
 }

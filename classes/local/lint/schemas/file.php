@@ -18,6 +18,7 @@ namespace local_devtools\local\lint\schemas;
 
 use JsonSerializable;
 use local_devtools\local\lint\schemas\issue;
+use local_devtools\local\utils;
 
 /**
  * Class representing a single file with issues.
@@ -65,5 +66,30 @@ class file implements JsonSerializable {
             'file' => $this->file,
             'issues' => $this->issues,
         ];
+    }
+
+    /**
+     * Formats a given file issue into a clickable link.
+     * @param int|null $line
+     * @param int|null $column
+     * @param bool $decorate
+     * @return string
+     */
+    public function format_path(?int $line = null, ?int $column = null, bool $decorate = false): string {
+        $path = $this->file;
+
+        static $filter = fn(?string $item) => (bool) $item;
+
+        $location = implode(":", utils::array_filter_left([$path, $line, $column], $filter));
+
+        if (!$decorate) {
+            return $location;
+        }
+
+        $encodedpath = str_replace('%2F', '/', rawurlencode($path));
+        $encodedlocation = implode(":", utils::array_filter_left([$encodedpath, $line, $column], $filter));
+
+        $link = "<href=vscode://file/$encodedlocation>$location</>";
+        return $link;
     }
 }

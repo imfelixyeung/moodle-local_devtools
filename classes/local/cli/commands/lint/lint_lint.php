@@ -48,6 +48,8 @@ class lint_lint extends Command {
         #[Option('Enable the php-codesniffer linter')] bool $phpcs = false,
         #[Option('Enable the php -l linter')] bool $phplint = false,
         #[Option('Enable the stylelint linter')] bool $stylelint = false,
+        #[Option('Output as JSON')] bool $json = false,
+        #[Option('Add file:// links to output')] bool $decorate = true,
         #[Option('Enable/disable the progress bar')] bool $progress = true,
     ): int {
         global $CFG;
@@ -82,15 +84,35 @@ class lint_lint extends Command {
 
         $results = linter::run([$path], $linters, progress: $progressindicator);
 
-        $json = json_encode([
-            'linters' => linter::get_linters_info($linters),
-            'files' => $results,
-        ]);
-        if ($json === false) {
-            $io->error('Error encoding linter results JSON');
-            return -1;
+        if ($json) {
+            $jsonstring = json_encode([
+                'linters' => linter::get_linters_info($linters),
+                'files' => $results,
+            ]);
+            if ($jsonstring === false) {
+                $io->error('Error encoding linter results JSON');
+                return -1;
+            }
+            $io->writeln($jsonstring);
+            return 0;
         }
-        $io->writeln($json);
+
+        $decorateoutput = $decorate && $io->isDecorated();
+
+        foreach ($results as $fileresult) {
+            $path = $fileresult->file;
+            $issues = $fileresult->issues;
+
+            foreach ($issues as $issue) {
+                $severity = $issue->severity->value;
+                $message = $issue->message;
+                $rule = "$issue->source/$issue->rule";
+                $filelink = $fileresult->format_path($issue->line, $issue->column, $decorateoutput);
+                $out = "$filelink: $severity: $message ($rule)";
+                $io->writeln($out);
+            }
+        }
+
         return 0;
     }
 }
