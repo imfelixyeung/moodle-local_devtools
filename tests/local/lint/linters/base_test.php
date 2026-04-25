@@ -163,19 +163,19 @@ final class base_test extends advanced_testcase {
      * Test that set_progress_file does nothing when progress is null.
      */
     public function test_set_progress_file_does_nothing_when_no_progress(): void {
+        $this->expectNotToPerformAssertions();
         $linter = new base(null);
         $linter->set_progress_file('/some/path/file.php');
-        $this->assertTrue(true);
     }
 
     /**
      * Test that set_progress_file sets message when progress exists.
      */
     public function test_set_progress_file_sets_message_when_progress_exists(): void {
+        $this->expectNotToPerformAssertions();
         $output = new NullOutput();
         $progress = new ProgressIndicator($output);
         $linter = new base($progress);
         $linter->set_progress_file('/some/path/file.php');
-        $this->assertTrue(true);
     }
 }

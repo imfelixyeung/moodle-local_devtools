@@ -66,6 +66,7 @@ final class stylelint_test extends advanced_testcase {
         ];
 
         $issue = stylelint::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::warning, $issue->severity);
     }
 
@@ -82,6 +83,7 @@ final class stylelint_test extends advanced_testcase {
         ];
 
         $issue = stylelint::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::unknown, $issue->severity);
     }
 

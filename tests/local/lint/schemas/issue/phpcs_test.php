@@ -66,6 +66,7 @@ final class phpcs_test extends advanced_testcase {
         ];
 
         $issue = phpcs::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::info, $issue->severity);
     }
 
@@ -88,8 +89,13 @@ final class phpcs_test extends advanced_testcase {
             'message' => 'Message',
         ];
 
-        $this->assertSame(severity::warning, phpcs::from_object($obj1)->severity);
-        $this->assertSame(severity::warning, phpcs::from_object($obj4)->severity);
+        $issue1 = phpcs::from_object($obj1);
+        $issue4 = phpcs::from_object($obj4);
+
+        $this->assertNotNull($issue1);
+        $this->assertNotNull($issue4);
+        $this->assertSame(severity::warning, $issue1->severity);
+        $this->assertSame(severity::warning, $issue4->severity);
     }
 
     /**
@@ -105,6 +111,7 @@ final class phpcs_test extends advanced_testcase {
         ];
 
         $issue = phpcs::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::error, $issue->severity);
     }
 
@@ -121,6 +128,7 @@ final class phpcs_test extends advanced_testcase {
         ];
 
         $issue = phpcs::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::unknown, $issue->severity);
     }
 

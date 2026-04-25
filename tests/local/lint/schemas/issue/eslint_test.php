@@ -81,6 +81,7 @@ final class eslint_test extends advanced_testcase {
         ];
 
         $issue = eslint::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::info, $issue->severity);
     }
 
@@ -97,6 +98,7 @@ final class eslint_test extends advanced_testcase {
         ];
 
         $issue = eslint::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::info, $issue->severity);
     }
 
@@ -113,6 +115,7 @@ final class eslint_test extends advanced_testcase {
         ];
 
         $issue = eslint::from_object($obj);
+        $this->assertNotNull($issue);
         $this->assertSame(severity::warning, $issue->severity);
     }
 
