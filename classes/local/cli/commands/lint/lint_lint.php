@@ -16,12 +16,8 @@
 
 namespace local_devtools\local\cli\commands\lint;
 
+use local_devtools\local\api\linter;
 use local_devtools\local\lint\linters\base;
-use local_devtools\local\lint\linters\eslint;
-use local_devtools\local\lint\linters\lang;
-use local_devtools\local\lint\linters\phpcs;
-use local_devtools\local\lint\linters\phplint;
-use local_devtools\local\lint\linters\stylelint;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -76,22 +72,23 @@ class lint_lint extends Command {
         $progressindicator = $progress && $output instanceof ConsoleOutputInterface
             ? new ProgressIndicator($output->getErrorOutput())
             : null;
-        $linters = [
-            $eslint ? new eslint(progress: $progressindicator) : null,
-            $lang ? new lang(progress: $progressindicator) : null,
-            $phpcs ? new phpcs(progress: $progressindicator) : null,
-            $phplint ? new phplint(progress: $progressindicator) : null,
-            $stylelint ? new stylelint(progress: $progressindicator) : null,
-        ];
-        $linters = array_filter($linters, fn($linter) => $linter !== null);
 
-        $progressindicator?->start('Starting.');
-        $results = array_map(fn(base $linter) => $linter->lint($path), $linters);
-        $progressindicator?->finish('Done.');
+        $linters = linter::get_linters_names(
+            eslint: $eslint,
+            lang: $lang,
+            phpcs: $phpcs,
+            phplint: $phplint,
+            stylelint: $stylelint
+        );
+
+        $results = linter::run([$path], $linters, progress: $progressindicator);
 
         $json = json_encode([
-            'linters' => array_values(array_map(fn(base $linter) => $linter::class::get_name(), $linters)),
-            'files' => base::flatten_results($results),
+            'linters' => array_values(array_map(
+                fn(/** @var class-string<base> $linter */ $linter) => $linter::get_name(),
+                $linters
+            )),
+            'files' => $results,
         ]);
         if ($json === false) {
             $io->error('Error encoding linter results JSON');
