@@ -56,7 +56,7 @@ class linter {
             $phplint ? phplint::class : null,
             $stylelint ? stylelint::class : null,
         ];
-        $linters = array_filter($linters, fn($linter) => $linter !== null);
+        $linters = array_values(array_filter($linters, fn($linter) => $linter !== null));
         return $linters;
     }
 
