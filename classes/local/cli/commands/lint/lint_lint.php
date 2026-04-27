@@ -37,6 +37,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class lint_lint extends Command {
     /**
      * Invoke
+     * @param string[] $paths
      * @return int
      */
     public function __invoke(
