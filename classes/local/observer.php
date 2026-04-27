@@ -31,6 +31,10 @@ class observer {
      * @return void
      */
     public static function observe_all_events(base $event) {
+        if (!(devtools::is_enabled() && \local_devtools\local\config\debugbar::is_enabled())) {
+            return;
+        }
+
         $collector = debugbar::instance()->get_time_data_collector();
         if (!$collector) {
             return;

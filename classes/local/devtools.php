@@ -14,38 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\config;
-
-use local_devtools\local\devtools;
+namespace local_devtools\local;
 
 /**
- * Utility class to get plugin config.
+ * Utility class.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class debugbar {
+class devtools {
     /**
-     * Get if debugbar is enabled.
-     * @return bool True if enabled, false otherwise.
+     * Determines if the plugin should load.
+     * @return bool
      */
     public static function is_enabled(): bool {
-        return get_config('local_devtools', 'debugbar_enabled') === '1';
-    }
+        // phpcs:ignore moodle.Commenting.InlineComment
+        // @phpstan-ignore if.alwaysFalse
+        if (PHPUNIT_TEST) {
+            return false;
+        }
 
-    /**
-     * Get if debugbar query collection is enabled.
-     * @return bool True if enabled, false otherwise.
-     */
-    public static function is_collect_queries_enabled(): bool {
-        return get_config('local_devtools', 'debugbar_collect_queries') === '1';
-    }
+        if (getenv('MDL_LOCAL_DEVTOOLS_DISABLE')) {
+            return false;
+        }
 
-    /**
-     * Get the configured editor for the plugin.
-     * @return string|null The editor name or null if not set.
-     */
-    public static function get_editor(): ?string {
-        return get_config('local_devtools', 'debugbar_editor') ?: null;
+        return true;
     }
 }
