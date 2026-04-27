@@ -76,6 +76,14 @@ class base {
     }
 
     /**
+     * Determines if the given linter is installed.
+     * @return bool
+     */
+    public static function is_installed(): bool {
+        return true;
+    }
+
+    /**
      * Declares file patterns to include.
      * @return string[]
      */
@@ -149,6 +157,17 @@ class base {
      * @return file[]
      */
     public function lint(string $path): array {
+        if (!static::is_installed()) {
+            $issue = issue::simple(
+                'Linter not available or is not installed',
+                'linter-installed',
+                'base',
+                severity::warning
+            );
+            $file = new file($path, [$issue]);
+            return [$file];
+        }
+
         if (is_dir($path)) {
             return $this->lint_directory($path);
         }

@@ -20,6 +20,7 @@ use local_devtools\local\lint\linters\base;
 use local_devtools\local\lint\linters\eslint;
 use local_devtools\local\lint\linters\lang;
 use local_devtools\local\lint\linters\phpcs;
+use local_devtools\local\lint\linters\phpdoc;
 use local_devtools\local\lint\linters\phplint;
 use local_devtools\local\lint\linters\stylelint;
 use local_devtools\local\lint\schemas\file;
@@ -39,6 +40,7 @@ class linter {
      * @param bool $lang
      * @param bool $phpcs
      * @param bool $phplint
+     * @param bool $phpdoc
      * @param bool $stylelint
      * @return class-string<base>[]
      */
@@ -47,6 +49,7 @@ class linter {
         bool $lang = true,
         bool $phpcs = true,
         bool $phplint = true,
+        bool $phpdoc = true,
         bool $stylelint = true,
     ): array {
         $linters = [
@@ -54,6 +57,7 @@ class linter {
             $lang ? lang::class : null,
             $phpcs ? phpcs::class : null,
             $phplint ? phplint::class : null,
+            $phpdoc ? phpdoc::class : null,
             $stylelint ? stylelint::class : null,
         ];
         $linters = array_values(array_filter($linters, fn($linter) => $linter !== null));

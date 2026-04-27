@@ -68,4 +68,18 @@ enum severity: string {
             default => self::unknown,
         };
     }
+
+    /**
+     * Gets severity from phpdoc.
+     * @param string $severity
+     * @return severity
+     */
+    public static function from_phpdoc(string $severity) {
+        return match ($severity) {
+            'info' => self::info,
+            'warning' => self::warning,
+            'error' => self::error,
+            default => self::unknown,
+        };
+    }
 }

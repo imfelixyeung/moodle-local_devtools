@@ -47,6 +47,7 @@ class lint_lint extends Command {
         #[Option('Enable the lang dir linter')] bool $lang = false,
         #[Option('Enable the php-codesniffer linter')] bool $phpcs = false,
         #[Option('Enable the php -l linter')] bool $phplint = false,
+        #[Option('Enable the phpdoc linter')] bool $phpdoc = false,
         #[Option('Enable the stylelint linter')] bool $stylelint = false,
         #[Option('Output as JSON')] bool $json = false,
         #[Option('Add file:// links to output')] bool $decorate = true,
@@ -71,11 +72,12 @@ class lint_lint extends Command {
         }
 
         // If all linter flags are false, then turn all back on.
-        if (array_unique([$eslint, $lang, $phpcs, $phplint, $stylelint]) === [false]) {
+        if (array_unique([$eslint, $lang, $phpcs, $phplint, $phpdoc, $stylelint]) === [false]) {
             $eslint = true;
             $lang = true;
             $phpcs = true;
             $phplint = true;
+            $phpdoc = true;
             $stylelint = true;
         }
 
@@ -88,6 +90,7 @@ class lint_lint extends Command {
             lang: $lang,
             phpcs: $phpcs,
             phplint: $phplint,
+            phpdoc: $phpdoc,
             stylelint: $stylelint
         );
 
