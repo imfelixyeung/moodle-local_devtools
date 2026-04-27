@@ -16,41 +16,28 @@
 
 namespace local_devtools\local;
 
-use core\event\base;
-
 /**
- * Observer.
+ * Utility class.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class observer {
+class devtools {
     /**
-     * Observe everything any log it!
-     * @param base $event
-     * @return void
+     * Determines if the plugin should load.
+     * @return bool
      */
-    public static function observe_all_events(base $event) {
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
-            return;
+    public static function is_enabled(): bool {
+        // phpcs:ignore moodle.Commenting.InlineComment
+        // @phpstan-ignore if.alwaysFalse
+        if (PHPUNIT_TEST) {
+            return false;
         }
 
-        $collector = debugbar::instance()->get_time_data_collector();
-        if (!$collector) {
-            return;
+        if (getenv('MDL_LOCAL_DEVTOOLS_DISABLE')) {
+            return false;
         }
 
-        $eventname = $event::get_name();
-        $classname = $event::class;
-        $label = "Event: $eventname ($classname)";
-        $params = [
-            'description' => $event->get_description(),
-            'data' => $event->get_data(),
-            'context' => $event->get_context(),
-            'url' => $event->get_url(),
-        ];
-
-        $collector->addMeasure($label, params: $params);
-        return;
+        return true;
     }
 }

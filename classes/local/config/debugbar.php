@@ -16,6 +16,8 @@
 
 namespace local_devtools\local\config;
 
+use local_devtools\local\devtools;
+
 /**
  * Utility class to get plugin config.
  * @package   local_devtools
@@ -28,6 +30,11 @@ class debugbar {
      * @return bool True if enabled, false otherwise.
      */
     public static function is_enabled(): bool {
+        $pluginenabled = devtools::is_enabled();
+        if (!$pluginenabled) {
+            return false;
+        }
+
         return get_config('local_devtools', 'debugbar_enabled') === '1';
     }
 
