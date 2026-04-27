@@ -14,30 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace local_devtools\local\cli;
-
-use local_devtools\local\cli\commands\database\database_list;
-use local_devtools\local\cli\commands\lint\lint_lint;
-use local_devtools\local\cli\commands\mcp\mcp_serve;
-use local_devtools\local\cli\commands\plugins\plugins_list;
-use Symfony\Component\Console\Application as BaseApplication;
+namespace local_devtools\local;
 
 /**
- * Devtools console application.
- *
+ * Observer.
  * @package   local_devtools
  * @copyright 2026 Felix Yeung
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class application extends BaseApplication {
+class utils {
     /**
-     * Constructor.
+     * Like {@see array_filter} but stops when callback returns false.
+     *
+     *  // phpcs:ignore moodle.Commenting.ValidTags.Invalid
+     * @template TItem
+     *
+     * @param TItem[] $array
+     * @param callable $callback
+     * @return TItem[]
      */
-    public function __construct() {
-        parent::__construct('devtools');
-        $this->addCommand(new plugins_list());
-        $this->addCommand(new database_list());
-        $this->addCommand(new mcp_serve());
-        $this->addCommand(new lint_lint());
+    public static function array_filter_left(array $array, callable $callback): array {
+        $result = [];
+        foreach ($array as $item) {
+            $match = $callback($item);
+            if (!$match) {
+                break;
+            }
+            $result[] = $item;
+        }
+        return $result;
     }
 }
