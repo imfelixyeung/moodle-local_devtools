@@ -94,6 +94,6 @@ class hook_callbacks {
      * @return bool
      */
     public static function callbacks_enabled() {
-        return \local_devtools\local\config\debugbar::is_enabled();
+        return devtools::is_enabled() && \local_devtools\local\config\debugbar::is_enabled();
     }
 }

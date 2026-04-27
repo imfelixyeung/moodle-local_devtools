@@ -36,7 +36,7 @@ class string_manager extends core_string_manager_standard {
     #[\Override]
     public function get_string($identifier, $component = '', $a = null, $lang = null) {
         $result = parent::get_string($identifier, $component, $a, $lang);
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+        if (!devtools::is_enabled() || !\local_devtools\local\config\debugbar::is_enabled()) {
             return $result;
         }
 

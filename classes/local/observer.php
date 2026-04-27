@@ -31,7 +31,7 @@ class observer {
      * @return void
      */
     public static function observe_all_events(base $event) {
-        if (!\local_devtools\local\config\debugbar::is_enabled()) {
+        if (!(devtools::is_enabled() && \local_devtools\local\config\debugbar::is_enabled())) {
             return;
         }
 

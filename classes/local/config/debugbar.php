@@ -30,11 +30,6 @@ class debugbar {
      * @return bool True if enabled, false otherwise.
      */
     public static function is_enabled(): bool {
-        $pluginenabled = devtools::is_enabled();
-        if (!$pluginenabled) {
-            return false;
-        }
-
         return get_config('local_devtools', 'debugbar_enabled') === '1';
     }
 
