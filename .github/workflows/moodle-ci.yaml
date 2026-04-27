@@ -93,6 +93,8 @@ jobs:
             - name: Moodle PHPDoc Checker
               if: ${{ !cancelled() }}
               run: moodle-plugin-ci phpdoc --max-warnings 0
+              env:
+                  MDL_LOCAL_DEVTOOLS_DISABLE: 1
 
             - name: Validating
               if: ${{ !cancelled() }}
